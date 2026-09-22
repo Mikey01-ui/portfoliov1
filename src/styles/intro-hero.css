@@ -1,0 +1,397 @@
+.intro-mask.intro-hero {
+  color: #e5e5e5;
+  background: #0a0a0a;
+}
+
+.intro-mask.intro-hero.is-active {
+  pointer-events: auto;
+}
+
+.intro-hero__bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #080808;
+}
+
+.intro-hero__bg-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.intro-hero__bg::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 45% 35% at 88% 12%, rgba(255, 45, 33, 0.42), transparent 70%),
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.05), transparent 45%);
+  mix-blend-mode: screen;
+  animation: intro-hero-bg-glow 14s ease-in-out infinite;
+}
+
+.intro-hero__bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.18;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  animation: intro-hero-bg-grain 6s ease-in-out infinite;
+}
+
+@keyframes intro-hero-bg-glow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.88;
+  }
+  33% {
+    transform: translate(-2%, 1.5%) scale(1.05);
+    opacity: 1;
+  }
+  66% {
+    transform: translate(1.5%, -1%) scale(1.03);
+    opacity: 0.92;
+  }
+}
+
+@keyframes intro-hero-bg-grain {
+  0%,
+  100% {
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-hero__bg::after,
+  .intro-hero__bg::before {
+    animation: none;
+  }
+}
+
+.intro-hero__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 100%;
+  padding:
+    max(clamp(0.75rem, 2vh, 1.5rem), env(safe-area-inset-top, 0px))
+    max(clamp(1rem, 3vw, 2.5rem), env(safe-area-inset-right, 0px))
+    max(clamp(1rem, 2.5vh, 1.75rem), env(safe-area-inset-bottom, 0px))
+    max(clamp(1rem, 3vw, 2.5rem), env(safe-area-inset-left, 0px));
+}
+
+.intro-hero__main {
+  position: relative;
+  width: min(100%, 100rem);
+  margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+}
+
+/* One shared height: type cap-height = portrait height (like the reference). */
+.intro-hero__name-row {
+  /* Approx. horizontal footprint of IM + MILTON + portrait at this cap height */
+  --hero-lockup-max-w: 7.15;
+  --hero-lockup-h: min(
+    clamp(10rem, min(46vh, 32vw), 26rem),
+    calc((100vw - 2.5rem) / var(--hero-lockup-max-w))
+  );
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(0.08em, 0.45vw, 0.22em);
+  height: var(--hero-lockup-h);
+  margin-inline: auto;
+}
+
+.intro-hero__portrait-block {
+  position: relative;
+  flex-shrink: 0;
+  align-self: flex-end;
+  height: var(--hero-lockup-h);
+  width: calc(var(--hero-lockup-h) * 0.74);
+  margin: 0 0 0.42em 0.08em;
+}
+
+.intro-hero__tagline {
+  position: absolute;
+  left: 0.15rem;
+  right: -2.5rem;
+  bottom: calc(100% - 0.15rem);
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.28em;
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-hero-scrawl, "Permanent Marker", "Rock Salt", cursive);
+  font-size: clamp(0.72rem, 1.45vw, 1.05rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  transform: rotate(-11deg);
+  transform-origin: left bottom;
+  pointer-events: none;
+}
+
+.intro-hero__tagline-text {
+  display: inline-block;
+}
+
+.intro-hero__tagline-arrow {
+  display: inline-block;
+  flex-shrink: 0;
+  margin: 0 0 0.08em -0.05em;
+  font-family: var(--font-hero-scrawl, "Permanent Marker", "Rock Salt", cursive);
+  font-size: 1.35em;
+  line-height: 1;
+  transform: translate(0.2em, 0.05em) rotate(6deg);
+}
+
+.intro-hero__im,
+.intro-hero__milton {
+  font-family: var(--font-hero-display, "Bebas Neue", sans-serif);
+  height: var(--hero-lockup-h);
+  font-size: calc(var(--hero-lockup-h) / 0.73);
+  font-weight: 400;
+  line-height: 0.73;
+  letter-spacing: 0.012em;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: flex-end;
+  margin: 0;
+  padding: 0;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+@supports not (text-box-trim: trim-both) {
+  .intro-hero__im,
+  .intro-hero__milton {
+    transform: translateY(0.045em);
+  }
+}
+
+.intro-hero__im {
+  color: #e5e5e5;
+}
+
+.intro-hero__milton {
+  color: #ff2d21;
+}
+
+.intro-hero__portrait {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #151515;
+  line-height: 0;
+}
+
+.intro-hero__portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 54% 42%;
+  transform: scale(1.22);
+  transform-origin: 50% 100%;
+}
+
+.intro-hero__foot {
+  position: relative;
+  width: min(100%, 96rem);
+  padding-top: 0.85rem;
+}
+
+.intro-hero__scratch-line {
+  position: absolute;
+  top: 0;
+  left: -2%;
+  right: -2%;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transform: rotate(-0.6deg) scaleX(1.02);
+  opacity: 0.92;
+  clip-path: polygon(
+    0% 40%,
+    3% 20%,
+    7% 55%,
+    12% 25%,
+    18% 60%,
+    24% 30%,
+    31% 50%,
+    38% 22%,
+    45% 58%,
+    52% 28%,
+    59% 52%,
+    66% 24%,
+    73% 56%,
+    80% 32%,
+    87% 48%,
+    94% 26%,
+    100% 42%,
+    100% 100%,
+    0% 100%
+  );
+}
+
+.intro-hero__scroll-cue {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0;
+  font-family: var(--font-hero-scrawl, "Permanent Marker", cursive);
+  font-size: clamp(0.85rem, 1.6vw, 1.15rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.intro-hero__scroll-cue::before {
+  content: "↓";
+  font-family: var(--font-sans);
+  font-size: 0.95em;
+  transform: translateY(-0.05em);
+}
+
+@media (min-width: 1400px) {
+  .intro-hero__name-row {
+    --hero-lockup-h: min(
+      min(54vh, 28rem),
+      calc((100vw - 2.5rem) / var(--hero-lockup-max-w))
+    );
+  }
+}
+
+@media (min-width: 1900px) {
+  .intro-hero__name-row {
+    --hero-lockup-h: min(
+      min(58vh, 30rem),
+      calc((100vw - 2.5rem) / var(--hero-lockup-max-w))
+    );
+  }
+}
+
+/* MacBook / short laptop viewports */
+@media (min-width: 900px) and (max-height: 860px) {
+  .intro-hero__inner {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .intro-hero__name-row {
+    --hero-lockup-h: min(
+      clamp(7.5rem, min(38vh, 26vw), 18rem),
+      calc((100vw - 2.5rem) / var(--hero-lockup-max-w))
+    );
+  }
+
+  .intro-hero__main {
+    margin-bottom: 0.5rem;
+  }
+
+  .intro-hero__foot {
+    padding-top: 0.5rem;
+  }
+
+  .intro-hero__scroll-cue {
+    margin-top: 0.45rem;
+    font-size: clamp(0.75rem, 1.4vw, 1rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .intro-hero__name-row {
+    --hero-lockup-h: min(
+      clamp(6.5rem, min(40vh, 38vw), 14rem),
+      calc((100vw - 2.5rem) / var(--hero-lockup-max-w))
+    );
+  }
+}
+
+@media (max-width: 720px) {
+  .intro-hero__tagline {
+    right: -0.5rem;
+    font-size: clamp(0.52rem, 2.85vw, 0.82rem);
+    transform: rotate(-9deg);
+  }
+
+  .intro-hero__name-row {
+    --hero-lockup-h: min(
+      clamp(5.25rem, min(34vh, 40vw), 10.5rem),
+      calc((100vw - 2rem) / var(--hero-lockup-max-w))
+    );
+    flex-wrap: nowrap;
+    height: var(--hero-lockup-h);
+  }
+
+  .intro-hero__im,
+  .intro-hero__milton {
+    font-size: calc(var(--hero-lockup-h) / 0.73);
+    line-height: 0.73;
+  }
+
+  .intro-hero__portrait-block {
+    height: var(--hero-lockup-h);
+    width: calc(var(--hero-lockup-h) * 0.74);
+    margin-left: 0.04em;
+  }
+
+  .intro-hero__portrait img {
+    object-position: 52% 36%;
+    transform: scale(1.22);
+  }
+
+  .intro-hero__foot {
+    width: 100%;
+    padding-top: 0.65rem;
+  }
+
+  .intro-hero__scratch-line {
+    left: 0;
+    right: 0;
+  }
+
+  .intro-hero__scroll-cue {
+    font-size: clamp(0.72rem, 3.4vw, 0.95rem);
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (max-width: 380px) {
+  .intro-hero__tagline {
+    white-space: normal;
+    max-width: 11.5rem;
+    line-height: 1.05;
+    transform: rotate(-8deg);
+  }
+
+  .intro-hero__tagline-arrow {
+    align-self: flex-end;
+  }
+}

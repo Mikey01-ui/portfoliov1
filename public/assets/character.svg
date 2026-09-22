@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" fill="none">
+  <ellipse cx="200" cy="480" rx="120" ry="18" fill="#000" opacity=".12"/>
+  <path d="M120 420c8-80 40-140 80-180" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <path d="M280 420c-8-80-40-140-80-180" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <rect x="155" y="200" width="90" height="110" rx="8" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M160 210h80M160 230h80M160 250h80" stroke="#111" stroke-width="1.5" opacity=".3"/>
+  <circle cx="185" cy="175" r="28" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M170 175h30M175 168h20" stroke="#111" stroke-width="2"/>
+  <rect x="165" y="145" width="70" height="22" rx="4" fill="#111"/>
+  <path d="M130 310h140v70H130z" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M145 380h110v35H145z" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M155 415h35v55h-35zM210 415h35v55h-35z" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M95 260h45l15 35H110z" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M305 260h-45l-15 35h50z" fill="#fff" stroke="#111" stroke-width="3"/>
+  <path d="M200 260c-25 0-45 15-55 40" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+  <text x="200" y="100" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#666">Replace with your character art</text>
+</svg>

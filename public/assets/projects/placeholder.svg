@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-label="Image placeholder">
+  <rect width="960" height="640" fill="#e0e0e0"/>
+  <rect x="80" y="80" width="800" height="480" fill="#d0d0d0" rx="4"/>
+  <text x="480" y="330" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="28">Add image in gallery.json</text>
+</svg>

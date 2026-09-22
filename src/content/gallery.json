@@ -1,0 +1,62 @@
+[
+  {
+    "id": "rotterdam",
+    "title": "VACATION · ROTTERDAM",
+    "category": "I love taking pics",
+    "description": "A vacation trip to Rotterdam — Erasmus Bridge, the waterfront, and shooting the skyline in golden light.",
+    "image": "rotterdam.jpg",
+    "launch": "Summer 2026",
+    "role": ["Vacation", "Photography"],
+    "recognition": []
+  },
+  {
+    "id": "drawing-megumi",
+    "title": "MEGUMI SKETCH",
+    "category": "I love drawing",
+    "description": "Ink study at the desk — Jujutsu Kaisen fan piece.",
+    "image": "drawing-megumi.jpg",
+    "launch": "2026",
+    "role": ["Drawing", "Ink"],
+    "recognition": []
+  },
+  {
+    "id": "blender-3d",
+    "title": "3D DESIGN",
+    "category": "3D design",
+    "description": "Learning Blender professionally — shading and texturing a Panasonic camcorder model.",
+    "image": "blender-3d.jpg",
+    "launch": "2026",
+    "role": ["Blender", "3D modeling", "Shading"],
+    "recognition": []
+  },
+  {
+    "id": "motion-video",
+    "title": "AS IT WAS",
+    "category": "Motion graphics & video editing",
+    "description": "DaVinci Resolve Fusion — vertical motion piece with compositing, text, and grade.",
+    "image": "motion-video.jpg",
+    "launch": "2026",
+    "role": ["DaVinci Resolve", "Fusion", "Motion graphics"],
+    "recognition": []
+  },
+  {
+    "id": "spendwise",
+    "title": "SPENDWISE",
+    "category": "Websites & dashboards",
+    "description": "Personal finance dashboard — balances, budgets, trends, and activity in a dark UI with lime accents.",
+    "image": "spendwise-dashboard.jpg",
+    "launch": "2026",
+    "role": ["UI design", "Dashboard", "Front-end"],
+    "recognition": []
+  },
+  {
+    "id": "n8n-automation",
+    "title": "N8N WORKFLOW",
+    "category": "Automations",
+    "description": "Multi-agent automation — Google Sheets, OpenAI, and chained AI agents through to output.",
+    "image": "n8n-automation.jpg",
+    "launch": "2026",
+    "role": ["n8n", "Automation", "AI agents"],
+    "recognition": []
+  }
+]

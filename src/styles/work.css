@@ -1,0 +1,331 @@
+.work {
+  background: var(--color-work-bg);
+  position: relative;
+  min-height: 100vh;
+}
+
+.work.is-locked {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.work-pin {
+  height: 100vh;
+  height: 100dvh;
+  will-change: transform;
+}
+
+.work-stage {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.work-bg-index {
+  position: absolute;
+  left: 10%;
+  top: 22%;
+  font-size: clamp(9rem, 24vw, 20rem);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.05);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.work-meta {
+  position: absolute;
+  left: 2rem;
+  top: 42%;
+  z-index: 12;
+  font-size: 0.68rem;
+  color: var(--color-muted);
+  max-width: 160px;
+  will-change: opacity, transform;
+}
+
+.work-meta__block + .work-meta__block {
+  margin-top: 1.1rem;
+}
+
+.work-meta h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.04em;
+}
+
+.work-meta ul li + li {
+  margin-top: 0.12rem;
+}
+
+.work-meta__link {
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.work-meta__link:hover {
+  color: var(--color-red);
+}
+
+.work-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.project-card {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 1px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
+  transform-origin: center center;
+  will-change: transform, width, height, filter, opacity;
+  backface-visibility: hidden;
+}
+
+.project-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-list {
+  position: absolute;
+  right: 2rem;
+  top: calc(var(--header-h) + 1rem);
+  bottom: 5rem;
+  width: min(320px, 26vw);
+  overflow: hidden;
+  z-index: 12;
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+
+.project-list__inner {
+  will-change: transform;
+}
+
+.project-list__item {
+  padding: 0.85rem 0;
+  opacity: 0.28;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  outline: none;
+  transition: opacity 0.35s ease;
+}
+
+.project-list__item:hover {
+  opacity: 0.55;
+}
+
+.project-list__item:focus-visible {
+  opacity: 0.85;
+  outline: 1px solid var(--color-red);
+  outline-offset: 4px;
+}
+
+.project-list__item.is-active {
+  opacity: 1;
+}
+
+.project-list__title {
+  display: block;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
+.project-list__meta {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--color-muted);
+  margin-top: 0.12rem;
+}
+
+.project-list__desc {
+  margin: 0.3rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+  max-width: 30ch;
+  display: none;
+}
+
+.project-list__item.is-active .project-list__desc {
+  display: block;
+}
+
+.project-list__scrollbar {
+  position: absolute;
+  right: 0;
+  top: 18%;
+  bottom: 18%;
+  width: 2px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.project-list__scrollbar span {
+  display: block;
+  width: 100%;
+  height: 20px;
+  background: var(--color-red);
+}
+
+.work-counter {
+  position: absolute;
+  left: 2rem;
+  bottom: 2rem;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+
+.work-counter__label {
+  font-size: 0.62rem;
+  color: var(--color-muted);
+}
+
+.work-counter__nums {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-weight: 800;
+  line-height: 0.9;
+}
+
+.work-counter__current {
+  font-size: clamp(4rem, 11vw, 7rem);
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.04em;
+}
+
+.work-counter__sep,
+.work-counter__total {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.work-scroll-hint {
+  position: absolute;
+  left: 2rem;
+  bottom: 6.5rem;
+  font-size: 0.62rem;
+  color: var(--color-muted);
+  z-index: 12;
+}
+
+.work-counter__reel {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  font-size: 0.62rem;
+  z-index: 12;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  pointer-events: auto;
+}
+
+.work-theme-swatches {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  z-index: 12;
+}
+
+.work-theme-swatches span {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.work-theme-swatches span:first-child {
+  background: #1a2744;
+}
+
+.work-theme-swatches span:last-child {
+  background: #f5f0e8;
+}
+
+@media (max-width: 900px) {
+  .project-list,
+  .work-theme-swatches,
+  .work-scroll-hint {
+    display: none;
+  }
+
+  .work-meta {
+    top: auto;
+    bottom: 7rem;
+    max-width: 45%;
+  }
+}
+
+@media (max-width: 720px) {
+  .work-bg-index {
+    left: 5%;
+    top: 18%;
+    font-size: clamp(5rem, 28vw, 9rem);
+  }
+
+  .work-meta {
+    left: max(1rem, env(safe-area-inset-left, 0px));
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: max(6.5rem, calc(5.5rem + env(safe-area-inset-bottom, 0px)));
+    max-width: min(72%, 16rem);
+    font-size: 0.62rem;
+  }
+
+  .work-counter {
+    left: max(1rem, env(safe-area-inset-left, 0px));
+    bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .work-counter__current {
+    font-size: clamp(2.75rem, 14vw, 4rem);
+  }
+
+  .work-counter__reel {
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+    max-width: 42%;
+    text-align: right;
+    line-height: 1.35;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .project-list {
+    width: min(280px, 22vw);
+    right: max(1.25rem, env(safe-area-inset-right, 0px));
+  }
+
+  .work-meta {
+    left: max(1.25rem, env(safe-area-inset-left, 0px));
+    max-width: 140px;
+  }
+}

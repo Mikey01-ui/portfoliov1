@@ -1,0 +1,167 @@
+import gsap from "gsap";
+import { site } from "../content/site";
+
+const FLIP_DEG = -180;
+const TILT_PEEK = -12;
+
+export function initAbout(reducedMotion: boolean): void {
+  const about = document.querySelector<HTMLElement>(".js-about");
+  if (!about) return;
+
+  const ctaWords = gsap.utils.toArray<HTMLElement>(".js-about-cta-word");
+  const flip = document.querySelector<HTMLElement>(".js-about-flip");
+  const flipInner = document.querySelector<HTMLElement>(".js-about-flip-inner");
+  const flipFront = document.querySelector<HTMLElement>(".js-about-flip-front");
+  const hireBtn = document.querySelector<HTMLElement>(".js-hire-me");
+  const hireText = document.querySelector<HTMLElement>(".js-hire-me-text");
+  const hireLine = document.querySelector<HTMLElement>(".js-hire-me-line");
+  const flipClose = document.querySelector<HTMLElement>(".js-flip-close");
+  const contactForm = document.querySelector<HTMLElement>(".js-about-contact-form");
+
+  let flipped = false;
+
+  const setFlippedState = (open: boolean): void => {
+    flipped = open;
+    hireBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+
+  const setFlippedLayout = (open: boolean): void => {
+    about.classList.toggle("is-flipped", open);
+  };
+
+  const openFlip = (): void => {
+    if (!flipInner || flipped) return;
+    setFlippedState(true);
+    if (reducedMotion) {
+      setFlippedLayout(true);
+      return;
+    }
+    gsap.to(about, {
+      backgroundColor: "#000000",
+      duration: 0.65,
+      ease: "power2.out",
+    });
+    gsap.to(flipInner, {
+      rotateX: FLIP_DEG,
+      duration: 0.95,
+      ease: "power3.inOut",
+      onComplete: () => setFlippedLayout(true),
+    });
+  };
+
+  const closeFlip = (): void => {
+    if (!flipInner || !flipped) return;
+    setFlippedLayout(false);
+    if (reducedMotion) {
+      setFlippedState(false);
+      return;
+    }
+    gsap.to(flipInner, {
+      rotateX: 0,
+      duration: 0.85,
+      ease: "power3.inOut",
+      onComplete: () => setFlippedState(false),
+    });
+    gsap.to(about, {
+      backgroundColor: site.colors.workBg,
+      duration: 0.55,
+      ease: "power2.inOut",
+    });
+  };
+
+  if (flipInner && !reducedMotion) {
+    gsap.set(flipInner, { transformPerspective: 1200, transformOrigin: "50% 50%" });
+  }
+
+  if (reducedMotion) {
+    gsap.set([...ctaWords, hireBtn, contactForm].filter(Boolean), {
+      opacity: 1,
+      y: 0,
+      rotateX: 0,
+      filter: "blur(0px)",
+    });
+    if (hireLine) gsap.set(hireLine, { scaleX: 1 });
+    flipFront?.addEventListener("click", openFlip);
+    flipClose?.addEventListener("click", closeFlip);
+    hireBtn?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openFlip();
+    });
+  } else {
+    const ctaTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".js-about-cta",
+        start: "top 78%",
+        toggleActions: "play none none reverse",
+        markers: site.DEBUG,
+      },
+    });
+
+    ctaTl.from(ctaWords, {
+      y: 56,
+      opacity: 0,
+      rotateX: -28,
+      transformOrigin: "50% 100%",
+      stagger: 0.09,
+      duration: 0.85,
+      ease: "power3.out",
+    });
+
+    if (hireBtn && hireText && hireLine) {
+      ctaTl.from(
+        hireText,
+        { y: 24, opacity: 0, duration: 0.65, ease: "power3.out" },
+        "-=0.35",
+      );
+      ctaTl.from(hireLine, { scaleX: 0, duration: 0.75, ease: "power3.inOut" }, "-=0.45");
+    }
+
+    flipFront?.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest(".js-about-contact-form")) return;
+      openFlip();
+    });
+
+    hireBtn?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openFlip();
+    });
+
+    flipClose?.addEventListener("click", closeFlip);
+
+    if (flip && flipInner && flipFront) {
+      flipFront.addEventListener("mouseenter", () => {
+        if (flipped) return;
+        gsap.to(flipInner, {
+          rotateX: TILT_PEEK,
+          duration: 0.45,
+          ease: "power2.out",
+        });
+      });
+      flipFront.addEventListener("mouseleave", () => {
+        if (flipped) return;
+        gsap.to(flipInner, {
+          rotateX: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+        });
+      });
+    }
+  }
+
+  contactForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nameInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-name");
+    const emailInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-email");
+    const messageInput = contactForm.querySelector<HTMLTextAreaElement>(".js-contact-form-message");
+    const hearInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-hear");
+    const name = nameInput?.value.trim() ?? "";
+    const from = emailInput?.value.trim() ?? "";
+    const message = messageInput?.value.trim() ?? "";
+    const hear = hearInput?.value.trim() ?? "";
+    const subject = encodeURIComponent("Project inquiry — Milton portfolio");
+    const body = encodeURIComponent(
+      `Name: ${name}\nEmail: ${from}\nHow they heard about me: ${hear || "—"}\n\n${message}`,
+    );
+    window.location.href = `mailto:${site.contactEmail}?subject=${subject}&body=${body}`;
+  });
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gallery.schema.json",
+  "title": "Work gallery",
+  "description": "One object per project, in scroll order. Images: files in public/assets/projects/ or a full URL.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["title", "category", "description", "image", "launch"],
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Optional slug (used for filenames). Auto-generated from title if omitted."
+      },
+      "title": {
+        "type": "string",
+        "description": "Project name in the list and image alt text."
+      },
+      "category": {
+        "type": "string",
+        "description": "Subtitle under the title in the list."
+      },
+      "description": {
+        "type": "string",
+        "description": "Shown under the active project in the list."
+      },
+      "image": {
+        "type": "string",
+        "description": "Filename in public/assets/projects/ (e.g. hero.webp) or path/URL starting with / or http."
+      },
+      "launch": {
+        "type": "string",
+        "description": "Launch date line in the left meta column."
+      },
+      "role": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Role bullets. Omit for default design-direction lines."
+      },
+      "recognition": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Award lines. Omit for defaults. Use [] to hide the Recognition block."
+      },
+      "url": {
+        "type": "string",
+        "format": "uri",
+        "description": "Optional live project link (View site in meta while active)."
+      }
+    }
+  }
+}
