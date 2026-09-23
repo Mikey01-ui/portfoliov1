@@ -2,9 +2,36 @@ import gsap from "gsap";
 import { initIntroHeroBg, setIntroHeroBgActive } from "./introHeroBg";
 
 let enterTween: gsap.core.Timeline | null = null;
+let sheenTween: gsap.core.Tween | null = null;
+let sheenTrackerInitialized = false;
+
+function initMiltonSheenTracker(): void {
+  if (sheenTrackerInitialized) return;
+  sheenTrackerInitialized = true;
+
+  const handlePointerMove = (e: PointerEvent): void => {
+    const milton = document.querySelector<HTMLElement>(".js-intro-hero-milton");
+    if (!milton) return;
+    const rect = milton.getBoundingClientRect();
+    if (rect.width <= 0) return;
+
+    // Relinquish intro tween if user moves mouse so tracking takes immediate effect
+    if (sheenTween) {
+      sheenTween.kill();
+      sheenTween = null;
+    }
+
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const clampedPct = Math.max(-30, Math.min(130, xPct));
+    milton.style.setProperty("--sheen-x", `${clampedPct.toFixed(1)}%`);
+  };
+
+  window.addEventListener("pointermove", handlePointerMove, { passive: true });
+}
 
 export function initIntroHero(reducedMotion: boolean): void {
   initIntroHeroBg(reducedMotion);
+  initMiltonSheenTracker();
   if (!reducedMotion) setIntroHeroBgActive(true);
   const root = document.querySelector<HTMLElement>(".js-intro-hero");
   const im = document.querySelector<HTMLElement>(".js-intro-hero-im");
@@ -35,6 +62,9 @@ export function enterIntroHero(reducedMotion: boolean): void {
   if (!root || !im || !milton || !tagline || !portrait || !cue) return;
 
   enterTween?.kill();
+  sheenTween?.kill();
+  sheenTween = null;
+
   root.classList.add("is-active");
   setIntroHeroBgActive(true);
 
@@ -49,6 +79,21 @@ export function enterIntroHero(reducedMotion: boolean): void {
   gsap.set(tagline, { autoAlpha: 0, y: -16, rotation: -9, transformOrigin: "100% 100%" });
   gsap.set(portrait, { autoAlpha: 0, y: 32, scale: 0.94, transformOrigin: "50% 100%" });
   gsap.set(cue, { autoAlpha: 0, y: 16 });
+
+  // Specular light sweep intro across MILTON text
+  sheenTween = gsap.fromTo(
+    milton,
+    { "--sheen-x": "-35%" },
+    {
+      "--sheen-x": "135%",
+      duration: 1.25,
+      ease: "power2.inOut",
+      delay: 0.35,
+      onComplete: () => {
+        sheenTween = null;
+      },
+    },
+  );
 
   enterTween = gsap.timeline({
     defaults: { ease: "power3.out" },
@@ -70,8 +115,17 @@ export function resetIntroHero(): void {
   if (!root) return;
 
   enterTween?.kill();
+  sheenTween?.kill();
+  sheenTween = null;
+
   setIntroHeroBgActive(true);
   root.classList.remove("is-active");
+
+  const milton = document.querySelector<HTMLElement>(".js-intro-hero-milton");
+  if (milton) {
+    milton.style.setProperty("--sheen-x", "-50%");
+  }
+
   gsap.set(
     root.querySelectorAll(
       ".js-intro-hero-im, .js-intro-hero-milton, .js-intro-hero-tagline, .js-intro-hero-portrait, .js-intro-hero-cue",

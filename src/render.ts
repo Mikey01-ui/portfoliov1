@@ -24,7 +24,10 @@ function renderIntroHeroPanel(): string {
           <div class="intro-hero__main">
             <div class="intro-hero__name-row">
               <span class="intro-hero__im js-intro-hero-im">${escapeHtml(introHero.lineIm)}</span>
-              <span class="intro-hero__milton js-intro-hero-milton">${escapeHtml(introHero.lineName)}</span>
+              <span class="intro-hero__milton js-intro-hero-milton">
+                <span class="intro-hero__milton-base">${escapeHtml(introHero.lineName)}</span>
+                <span class="intro-hero__milton-sheen js-milton-sheen" aria-hidden="true">${escapeHtml(introHero.lineName)}</span>
+              </span>
               <div class="intro-hero__portrait-block">
                 <p class="intro-hero__tagline js-intro-hero-tagline">
                   <span class="intro-hero__tagline-arrow" aria-hidden="true">

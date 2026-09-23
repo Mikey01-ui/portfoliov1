@@ -279,7 +279,56 @@
 }
 
 .intro-hero__milton {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
   color: #ff2d21;
+  user-select: none;
+  cursor: default;
+  transition: filter 0.3s ease-out;
+}
+
+.intro-hero__milton:hover {
+  filter: drop-shadow(0 0 16px rgba(255, 45, 33, 0.45));
+}
+
+.intro-hero__milton-base {
+  color: #ff2d21;
+  display: inline-block;
+  user-select: none;
+}
+
+.intro-hero__milton-sheen {
+  position: absolute;
+  top: -0.2em;
+  bottom: -0.2em;
+  left: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: flex-end;
+  padding-bottom: 0.2em;
+  pointer-events: none;
+  user-select: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  white-space: nowrap;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent calc(var(--sheen-x, -50%) - 18%),
+    rgba(255, 255, 255, 0.98) calc(var(--sheen-x, -50%)),
+    rgba(255, 140, 110, 0.82) calc(var(--sheen-x, -50%) + 8%),
+    transparent calc(var(--sheen-x, -50%) + 24%),
+    transparent 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  mix-blend-mode: screen;
 }
 
 .intro-hero__portrait {
