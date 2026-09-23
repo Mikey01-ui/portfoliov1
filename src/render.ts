@@ -24,7 +24,14 @@ function renderIntroHeroPanel(): string {
           <div class="intro-hero__main">
             <div class="intro-hero__name-row">
               <span class="intro-hero__im js-intro-hero-im">${escapeHtml(introHero.lineIm)}</span>
-              <span class="intro-hero__milton js-intro-hero-milton">${escapeHtml(introHero.lineName)}</span>
+              <span class="intro-hero__milton js-intro-hero-milton" aria-label="${escapeAttr(introHero.lineName)}" title="Click to reroll fonts">
+                <span class="intro-hero__char-cell js-hero-char" data-char="M"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">M</span></span>
+                <span class="intro-hero__char-cell js-hero-char" data-char="I"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">I</span></span>
+                <span class="intro-hero__char-cell js-hero-char" data-char="L"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">L</span></span>
+                <span class="intro-hero__char-cell js-hero-char" data-char="T"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">T</span></span>
+                <span class="intro-hero__char-cell js-hero-char" data-char="O"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">O</span></span>
+                <span class="intro-hero__char-cell js-hero-char" data-char="N"><span class="intro-hero__char-glyph js-hero-glyph" data-font="bebas">N</span></span>
+              </span>
               <div class="intro-hero__portrait-block">
                 <p class="intro-hero__tagline js-intro-hero-tagline">
                   <span class="intro-hero__tagline-arrow" aria-hidden="true">

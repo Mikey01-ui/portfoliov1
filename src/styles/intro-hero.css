@@ -280,6 +280,83 @@
 
 .intro-hero__milton {
   color: #ff2d21;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  /* Dynamic specular sheen gradient tracking cursor X */
+  background: linear-gradient(
+    115deg,
+    #ff2d21 0%,
+    #ff2d21 calc(var(--sheen-x, -50%) - 18%),
+    #ffffff calc(var(--sheen-x, -50%) - 2%),
+    #ffa499 calc(var(--sheen-x, -50%) + 6%),
+    #ff2d21 calc(var(--sheen-x, -50%) + 24%),
+    #ff2d21 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: filter 0.25s ease-out;
+}
+
+.intro-hero__milton:hover {
+  filter: drop-shadow(0 0 14px rgba(255, 45, 33, 0.45));
+}
+
+.intro-hero__char-cell {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  flex-grow: 0;
+  height: 100%;
+  overflow: visible;
+}
+
+.intro-hero__char-glyph {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  will-change: transform, filter;
+  transition: transform 0.12s ease-out;
+  text-align: center;
+}
+
+.intro-hero__char-glyph.is-flashing {
+  filter: drop-shadow(0 0 18px #ff2d21) brightness(1.75);
+}
+
+/* Font Archetypes for the Decryption Shuffle */
+.intro-hero__char-glyph[data-font="mono"] {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  transform: scale(0.92);
+}
+
+.intro-hero__char-glyph[data-font="serif"] {
+  font-family: var(--font-serif, "Playfair Display", Georgia, serif);
+  font-weight: 800;
+  font-style: italic;
+  transform: scale(0.96);
+}
+
+.intro-hero__char-glyph[data-font="sans"] {
+  font-family: var(--font-sans, "Inter", sans-serif);
+  font-weight: 900;
+  transform: scale(0.94);
+}
+
+.intro-hero__char-glyph[data-font="marker"] {
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  transform: scale(0.90);
+}
+
+.intro-hero__char-glyph[data-font="bebas"] {
+  font-family: var(--font-hero-display, "Bebas Neue", sans-serif);
+  font-weight: 400;
+  font-style: normal;
+  transform: scale(1);
 }
 
 .intro-hero__portrait {
