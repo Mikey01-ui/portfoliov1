@@ -221,25 +221,8 @@ function drawCadMode(c: CanvasRenderingContext2D, w: number, h: number): void {
     c.lineWidth = 1;
     c.strokeRect(pointer.x - 7, pointer.y - 7, 14, 14);
 
-    // Dimension readouts near cursor
-    c.font = '600 9px "Inter", monospace';
-    c.fillStyle = "rgba(255, 255, 255, 0.65)";
-    c.fillText(
-      `X: ${Math.round(pointer.x)}  Y: ${Math.round(pointer.y)}`,
-      pointer.x + 12,
-      pointer.y - 10,
-    );
   }
 
-  // Live Monospace Telemetry in corners
-  c.font = '600 9px "Inter", monospace';
-  c.fillStyle = "rgba(255, 255, 255, 0.35)";
-  const pxMm = pointer.inside ? (pointer.x * 0.264).toFixed(1) : "000.0";
-  const pyMm = pointer.inside ? (pointer.y * 0.264).toFixed(1) : "000.0";
-  c.fillText(`[POS_X: ${pxMm}mm · POS_Y: ${pyMm}mm]`, 28, 36);
-  c.fillText(`[SYSTEM: 60FPS · ENGINE: SWISS_CAD_v4]`, w - 240, 36);
-  c.fillText(`[MAT NO. 04 · METRIC CALIBRATION · KAPITEIN LABS]`, 28, h - 28);
-  c.fillText(`[SCALE 1:1 · ARCHITECTURAL SPEC · 2026]`, w - 245, h - 28);
 }
 
 /* =========================================================================
@@ -460,15 +443,6 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
     c.fillRect(0, y, w, 1.5);
   }
 
-  // Precision Technical Monospace HUD Telemetry
-  c.font = '600 9px "Inter", monospace';
-  c.fillStyle = "rgba(255, 255, 255, 0.28)";
-  const pxMm = pointer.inside ? (pointer.x * 0.264).toFixed(1) : "000.0";
-  const pyMm = pointer.inside ? (pointer.y * 0.264).toFixed(1) : "000.0";
-  c.fillText(`[CRT_BEAM // POS_X: ${pxMm}mm · POS_Y: ${pyMm}mm]`, 28, 36);
-  c.fillText(`[REFRESH: 120Hz · PHOSPHOR_MATRIX_v3]`, w - 240, 36);
-  c.fillText(`[KAPITEIN LABS · TRINITRON RETRO-FUTURE]`, 28, h - 28);
-  c.fillText(`[ELECTRON FLUX: ${pointer.inside ? "ENGAGED" : "STANDBY"}]`, w - 215, h - 28);
 }
 
 /* =========================================================================
