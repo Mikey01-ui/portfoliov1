@@ -16,6 +16,9 @@ export function isIntroYoRevealComplete(): boolean {
 
 export function onIntroYoRevealComplete(handler: () => void): () => void {
   yoCompleteHandlers.add(handler);
+  if (yoRevealComplete) {
+    handler();
+  }
   return () => yoCompleteHandlers.delete(handler);
 }
 
@@ -284,6 +287,22 @@ export async function initIntroPixelYo(reducedMotion: boolean): Promise<PixelYoA
 
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) return null;
+
+  const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const skipYo = Boolean(
+    urlParams?.has("skipyo") ||
+      urlParams?.get("skip") === "yo" ||
+      urlParams?.has("hero") ||
+      urlParams?.has("preview"),
+  );
+
+  if (skipYo) {
+    gsap.set(layer, { autoAlpha: 0, display: "none" });
+    emitYoRevealComplete();
+    const api: PixelYoApi = { layer, resetReveal: () => {} };
+    activeApi = api;
+    return api;
+  }
 
   let grid: Grid | null = null;
   let scanTween: gsap.core.Tween | null = null;
