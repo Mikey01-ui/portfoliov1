@@ -87,7 +87,7 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
       end: () =>
         `+=${Math.max(projects.length * window.innerHeight * 0.55, window.innerHeight * 3.5)}`,
       pin: true,
-      scrub: true,
+      scrub: 1.0,
       anticipatePin: 1,
       markers: site.DEBUG,
       invalidateOnRefresh: true,

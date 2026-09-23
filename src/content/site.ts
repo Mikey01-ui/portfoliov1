@@ -17,7 +17,7 @@ export const site = {
   portraitSrc: "./assets/about-head.png",
   introCurtainStart: 0,
   /** Scroll-scrub pause on hero before the push reveal. */
-  introHeroScrollHold: 0.6,
+  introHeroScrollHold: 2.8,
   introYo: {
     text: "YO",
     /** Dot pitch across the full viewport (smaller = denser, like the reference). */

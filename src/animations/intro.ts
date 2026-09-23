@@ -46,11 +46,14 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
     header.setAttribute("aria-hidden", "true");
   };
 
+  const cue = document.querySelector<HTMLElement>(".js-intro-hero-cue");
+  const heroInner = document.querySelector<HTMLElement>(".intro-hero__inner");
+
   const slideDistance = () => window.innerWidth + 60;
   const blankHold = site.introHeroScrollHold;
-  const curtainDuration = 4.4;
-  const holdAfterTitle = 8.0;
-  const galleryRiseDuration = 5.0;
+  const curtainDuration = 6.2;
+  const holdAfterTitle = 4.8;
+  const galleryRiseDuration = 5.6;
 
   const curtainAt = blankHold;
   const titleHoldAt = curtainAt + curtainDuration;
@@ -59,6 +62,7 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
   gsap.set(mask, { x: 0, autoAlpha: 1 });
   gsap.set(sheet, { autoAlpha: 0 });
   gsap.set(stage, { autoAlpha: 1 });
+  if (heroInner) gsap.set(heroInner, { x: 0, opacity: 1 });
   if (work) {
     gsap.set(work, { autoAlpha: 1 });
     work.classList.remove("is-locked");
@@ -102,7 +106,7 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
       end: "bottom top",
       pin: stage,
       pinSpacing: false,
-      scrub: true,
+      scrub: 1.2,
       markers: site.DEBUG,
       anticipatePin: 1,
       invalidateOnRefresh: true,
@@ -124,6 +128,8 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
         gsap.set(stage, { autoAlpha: 1 });
         gsap.set(mask, { x: 0, autoAlpha: 1 });
         gsap.set(sheet, { autoAlpha: 0 });
+        if (heroInner) gsap.set(heroInner, { x: 0, opacity: 1, clearProps: "transform,opacity" });
+        if (cue) gsap.set(cue, { autoAlpha: 1, y: 0, clearProps: "transform,opacity" });
         hideHeader();
         resetIntroHero();
         resetIntroPixelYo();
@@ -142,27 +148,56 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
     },
   });
 
-  tl.fromTo(sheet, { autoAlpha: 0 }, { autoAlpha: 0, duration: blankHold, ease: "none" }, 0)
-    .to(sheet, { autoAlpha: 1, duration: 0.001, ease: "none" }, curtainAt)
+  tl.fromTo(sheet, { autoAlpha: 0 }, { autoAlpha: 0, duration: blankHold, ease: "none" }, 0);
+
+  // Fade out the scroll cue during the initial hold so it smoothly departs as you scroll
+  if (cue) {
+    tl.to(cue, { autoAlpha: 0, y: 14, duration: blankHold * 0.75, ease: "power2.out" }, 0);
+  }
+
+  tl.to(sheet, { autoAlpha: 1, duration: 0.001, ease: "none" }, curtainAt)
     .to(
       mask,
       {
         x: () => slideDistance(),
+        ease: "power2.inOut",
+        duration: curtainDuration,
+      },
+      curtainAt,
+    );
+
+  // Subtle cinematic counter-parallax on the hero contents as the curtain peels away:
+  if (heroInner) {
+    tl.to(
+      heroInner,
+      {
+        x: -120,
+        opacity: 0.8,
         ease: "power1.inOut",
         duration: curtainDuration,
       },
       curtainAt,
-    )
-    .to({}, { duration: holdAfterTitle }, titleHoldAt)
-    // As the gallery rises from below over the stage, title has subtle upward parallax drift:
+    );
+  }
+
+  // Smooth editorial reveal on "SEE WHAT I DO" title
+  tl.fromTo(
+    title,
+    { scale: 1.04, opacity: 0.85 },
+    { scale: 1, opacity: 1, duration: curtainDuration * 0.75, ease: "power2.out" },
+    curtainAt + curtainDuration * 0.25,
+  );
+
+  tl.to({}, { duration: holdAfterTitle }, titleHoldAt)
+    // As the gallery rises from below over the stage, title has subtle upward parallax drift and fade:
     .to(
       title,
       {
-        y: -110,
-        opacity: 0.15,
-        scale: 0.93,
+        y: -130,
+        opacity: 0,
+        scale: 0.92,
         duration: galleryRiseDuration,
-        ease: "none",
+        ease: "power2.in",
       },
       galleryRiseAt,
     )
