@@ -1,16 +1,10 @@
 import gsap from "gsap";
 import { initIntroHeroBg, setIntroHeroBgActive } from "./introHeroBg";
-import {
-  initMiltonTypoShuffle,
-  lockMiltonCharWidths,
-  playMiltonDecryptionShuffle,
-} from "./miltonTypoShuffle";
 
 let enterTween: gsap.core.Timeline | null = null;
 
 export function initIntroHero(reducedMotion: boolean): void {
   initIntroHeroBg(reducedMotion);
-  initMiltonTypoShuffle();
   if (!reducedMotion) setIntroHeroBgActive(true);
   const root = document.querySelector<HTMLElement>(".js-intro-hero");
   const im = document.querySelector<HTMLElement>(".js-intro-hero-im");
@@ -47,7 +41,6 @@ export function enterIntroHero(reducedMotion: boolean): void {
   if (reducedMotion) {
     gsap.set(pixel, { autoAlpha: 0 });
     gsap.set([im, milton, tagline, portrait, cue], { autoAlpha: 1, clearProps: "transform" });
-    void playMiltonDecryptionShuffle(true);
     return;
   }
 
@@ -66,18 +59,7 @@ export function enterIntroHero(reducedMotion: boolean): void {
 
   enterTween
     .to(im, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.12)
-    .to(
-      milton,
-      {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.75,
-        onStart: () => {
-          void playMiltonDecryptionShuffle(reducedMotion);
-        },
-      },
-      0.22,
-    )
+    .to(milton, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.22)
     .to(tagline, { autoAlpha: 1, y: 0, rotation: -5, duration: 0.65, transformOrigin: "100% 100%" }, 0.26)
     .to(portrait, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7 }, 0.3)
     .to(cue, { autoAlpha: 1, y: 0, duration: 0.55 }, 0.46);
@@ -90,7 +72,6 @@ export function resetIntroHero(): void {
   enterTween?.kill();
   setIntroHeroBgActive(true);
   root.classList.remove("is-active");
-  lockMiltonCharWidths();
   gsap.set(
     root.querySelectorAll(
       ".js-intro-hero-im, .js-intro-hero-milton, .js-intro-hero-tagline, .js-intro-hero-portrait, .js-intro-hero-cue",
