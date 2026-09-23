@@ -10,7 +10,7 @@
 
 export type HeroBgMode = "cad" | "silk" | "phosphor" | "shapes";
 
-let currentMode: HeroBgMode = "cad";
+let currentMode: HeroBgMode = "phosphor";
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -340,10 +340,10 @@ function drawSilkMode(c: CanvasRenderingContext2D, w: number, h: number): void {
 }
 
 /* =========================================================================
-   MODE 3: QUANTUM PHOSPHOR CRT MATRIX
+   MODE 3: QUANTUM PHOSPHOR CRT MATRIX (PERMANENT SELECTION)
    ========================================================================= */
 function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): void {
-  // Terminal black void
+  // Deep cathode void
   c.fillStyle = "#040406";
   c.fillRect(0, 0, w, h);
 
@@ -355,13 +355,13 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
     return;
   }
 
-  // Pointer excitation
+  // Pointer excitation: inject electron energy into phosphor grid
   if (pointer.inside) {
     const pcx = pointer.x / step;
     const pcy = pointer.y / step;
-    const radiusCells = 11;
+    const radiusCells = 12;
     const r2 = radiusCells * radiusCells;
-    const impulse = 0.45 + Math.min(1.2, pointer.speed * 0.04);
+    const impulse = 0.55 + Math.min(1.4, pointer.speed * 0.045);
 
     const minCol = Math.max(0, Math.floor(pcx - radiusCells));
     const maxCol = Math.min(cols - 1, Math.ceil(pcx + radiusCells));
@@ -372,19 +372,32 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
       for (let cl = minCol; cl <= maxCol; cl += 1) {
         const d2 = (cl - pcx) * (cl - pcx) + (r - pcy) * (r - pcy);
         if (d2 < r2) {
-          const boost = Math.exp(-d2 / (r2 * 0.4)) * impulse;
+          const boost = Math.exp(-d2 / (r2 * 0.38)) * impulse;
           const idx = r * cols + cl;
-          phosphorGrid[idx] = Math.min(1.8, (phosphorGrid[idx] || 0) + boost);
+          phosphorGrid[idx] = Math.min(2.0, (phosphorGrid[idx] || 0) + boost);
         }
       }
     }
   }
 
+  // Soft cursor halo glow
+  if (pointer.inside) {
+    const halo = c.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 180);
+    halo.addColorStop(0, "rgba(255, 45, 33, 0.12)");
+    halo.addColorStop(0.5, "rgba(255, 45, 33, 0.03)");
+    halo.addColorStop(1, "rgba(0, 0, 0, 0)");
+    c.fillStyle = halo;
+    c.fillRect(0, 0, w, h);
+  }
+
   // Ambient cathode scanline wave traveling down
-  const scanlineY = (time * 120) % h;
+  const scanlineY = (time * 110) % h;
   const scanlineRow = Math.floor(scanlineY / step);
 
-  // Render phosphors with exponential persistence decay
+  // Group phosphors for ultra-high FPS batch rendering
+  const idlePath = new Path2D();
+  const beamPath = new Path2D();
+
   for (let r = 0; r < rows; r += 1) {
     const py = r * step + step * 0.5;
     const isCathodeRow = Math.abs(r - scanlineRow) < 2;
@@ -394,37 +407,68 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
       let charge = phosphorGrid[idx] || 0;
 
       // Exponential half-life decay
-      charge *= 0.935;
+      charge *= 0.938;
       if (charge < 0.015) charge = 0;
       phosphorGrid[idx] = charge;
 
       const px = cl * step + step * 0.5;
 
       if (charge > 0.05) {
-        // High excitation: Blazing crimson & white core
+        // High excitation: Blazing crimson core with white-hot centroid
         const rVal = 255;
-        const gVal = Math.round(45 + Math.min(1, charge - 0.5) * 190);
-        const bVal = Math.round(33 + Math.min(1, charge - 0.5) * 190);
+        const gVal = Math.round(45 + Math.min(1, charge - 0.45) * 190);
+        const bVal = Math.round(33 + Math.min(1, charge - 0.45) * 190);
         const dotSize = Math.min(step * 0.48, 2.2 + charge * 2.8);
 
-        c.fillStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${Math.min(1, charge * 0.9)})`;
+        c.fillStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${Math.min(1, charge * 0.92)})`;
         c.beginPath();
         c.arc(px, py, dotSize, 0, Math.PI * 2);
         c.fill();
+      } else if (isCathodeRow) {
+        beamPath.rect(px - 1, py - 1, 2, 2);
       } else {
-        // Idle phosphor state with subtle cathode beam pulse
-        const ambientAlpha = isCathodeRow ? 0.22 : 0.055;
-        c.fillStyle = `rgba(200, 210, 230, ${ambientAlpha})`;
-        c.fillRect(px - 1, py - 1, 2, 2);
+        idlePath.rect(px - 1, py - 1, 1.5, 1.5);
       }
     }
   }
 
+  // Draw batched idle and beam phosphors
+  c.fillStyle = "rgba(180, 200, 230, 0.045)";
+  c.fill(idlePath);
+
+  c.fillStyle = "rgba(255, 100, 80, 0.22)";
+  c.fill(beamPath);
+
+  // Subtle registration crosshairs (+) at architectural intervals
+  c.strokeStyle = "rgba(255, 45, 33, 0.22)";
+  c.lineWidth = 1;
+  const crossSize = 3;
+  c.beginPath();
+  for (let x = 120; x < w; x += 240) {
+    for (let y = 120; y < h; y += 240) {
+      c.moveTo(x - crossSize, y);
+      c.lineTo(x + crossSize, y);
+      c.moveTo(x, y - crossSize);
+      c.lineTo(x, y + crossSize);
+    }
+  }
+  c.stroke();
+
   // Horizontal CRT scanline overlay
-  c.fillStyle = "rgba(0, 0, 0, 0.16)";
+  c.fillStyle = "rgba(0, 0, 0, 0.15)";
   for (let y = 0; y < h; y += 4) {
     c.fillRect(0, y, w, 1.5);
   }
+
+  // Precision Technical Monospace HUD Telemetry
+  c.font = '600 9px "Inter", monospace';
+  c.fillStyle = "rgba(255, 255, 255, 0.28)";
+  const pxMm = pointer.inside ? (pointer.x * 0.264).toFixed(1) : "000.0";
+  const pyMm = pointer.inside ? (pointer.y * 0.264).toFixed(1) : "000.0";
+  c.fillText(`[CRT_BEAM // POS_X: ${pxMm}mm · POS_Y: ${pyMm}mm]`, 28, 36);
+  c.fillText(`[REFRESH: 120Hz · PHOSPHOR_MATRIX_v3]`, w - 240, 36);
+  c.fillText(`[KAPITEIN LABS · TRINITRON RETRO-FUTURE]`, 28, h - 28);
+  c.fillText(`[ELECTRON FLUX: ${pointer.inside ? "ENGAGED" : "STANDBY"}]`, w - 215, h - 28);
 }
 
 /* =========================================================================
@@ -690,17 +734,19 @@ export function initIntroHeroBg(isReducedMotion: boolean): void {
   ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // Resolve initial mode from URL search param or localStorage
+  // Resolve initial mode from URL search param or default to phosphor
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
     const paramMode = params.get("bg") as HeroBgMode | null;
-    const storedMode = typeof localStorage !== "undefined" ? (localStorage.getItem("hero_bg_mode") as HeroBgMode | null) : null;
     if (paramMode && ["cad", "silk", "phosphor", "shapes"].includes(paramMode)) {
       currentMode = paramMode;
-    } else if (storedMode && ["cad", "silk", "phosphor", "shapes"].includes(storedMode)) {
-      currentMode = storedMode;
     } else {
-      currentMode = "cad"; // Default to top recommended mode
+      currentMode = "phosphor"; // Default permanent choice
+    }
+    try {
+      localStorage.setItem("hero_bg_mode", currentMode);
+    } catch {
+      /* ignore */
     }
   }
 
