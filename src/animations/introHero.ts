@@ -46,7 +46,7 @@ export function enterIntroHero(reducedMotion: boolean): void {
 
   gsap.set(im, { autoAlpha: 0, y: 40 });
   gsap.set(milton, { autoAlpha: 0, y: 48 });
-  gsap.set(tagline, { autoAlpha: 0, y: -12, rotation: -14 });
+  gsap.set(tagline, { autoAlpha: 0, y: -16, rotation: -9, transformOrigin: "100% 100%" });
   gsap.set(portrait, { autoAlpha: 0, y: 32, scale: 0.94, transformOrigin: "50% 100%" });
   gsap.set(cue, { autoAlpha: 0, y: 16 });
 
@@ -60,7 +60,7 @@ export function enterIntroHero(reducedMotion: boolean): void {
   enterTween
     .to(im, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.12)
     .to(milton, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.22)
-    .to(tagline, { autoAlpha: 1, y: 0, rotation: -8, duration: 0.65 }, 0.26)
+    .to(tagline, { autoAlpha: 1, y: 0, rotation: -5, duration: 0.65, transformOrigin: "100% 100%" }, 0.26)
     .to(portrait, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7 }, 0.3)
     .to(cue, { autoAlpha: 1, y: 0, duration: 0.55 }, 0.46);
 }

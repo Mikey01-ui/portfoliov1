@@ -9,7 +9,7 @@ export const about = {
     formNamePlaceholder: "Name",
     formEmailPlaceholder: "Email",
     formMessagePlaceholder: "Message",
-    formHearPlaceholder: "How did you hear about us?",
+    formHearPlaceholder: "How did you hear about me?",
     formSubmitLabel: "Let's do this",
     formBackLabel: "Back",
   },

@@ -36,16 +36,19 @@ if (initSmoothScroll()) {
 const mm = gsap.matchMedia();
 
 function boot(reducedMotion: boolean): void {
-  initWork(reducedMotion);
   initIntro(reducedMotion);
+  initWork(reducedMotion);
   initAbout(reducedMotion);
-  if (!reducedMotion) initGalleryNavigation();
+  initGalleryNavigation();
   waitForImages(app ?? document).then(() => refreshScroll());
-  window.addEventListener("load", () => refreshScroll());
-  if (!reducedMotion) {
-    window.addEventListener("resize", debounceRefresh());
+  if (document.readyState === "complete") {
+    refreshScroll();
+  } else {
+    window.addEventListener("load", () => refreshScroll(), { once: true });
   }
 }
+
+window.addEventListener("resize", debounceRefresh(200));
 
 mm.add("(prefers-reduced-motion: reduce)", () => {
   boot(true);

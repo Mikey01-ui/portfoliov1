@@ -36,7 +36,7 @@ export function getIntroPixelYoLayer(): HTMLElement | null {
 
 function viewSize(): { w: number; h: number } {
   return {
-    w: window.innerWidth,
+    w: document.documentElement.clientWidth || window.innerWidth,
     h: window.innerHeight,
   };
 }
@@ -189,11 +189,14 @@ function buildViewportMask(
   return { cols, rows, yoMask };
 }
 
-function shuffle(n: number): number[] {
-  const a = Array.from({ length: n }, (_, i) => i);
+function shuffle(n: number): Uint32Array {
+  const a = new Uint32Array(n);
+  for (let i = 0; i < n; i += 1) a[i] = i;
   for (let i = n - 1; i > 0; i -= 1) {
     const j = (Math.random() * (i + 1)) | 0;
-    [a[i], a[j]] = [a[j]!, a[i]!];
+    const tmp = a[i]!;
+    a[i] = a[j]!;
+    a[j] = tmp;
   }
   return a;
 }
@@ -211,23 +214,65 @@ function draw(ctx: CanvasRenderingContext2D, grid: Grid, w: number, h: number): 
   const { cols, rows, cellSize, yoMask, cellAlpha, cellFlash } = grid;
   const { color, dotScale, pageGridDim } = site.introYo;
   const dot = cellSize * dotScale;
+  const offset = (cellSize - dot) * 0.5;
 
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = color;
+
+  // Group into 4 discrete alpha buckets to reduce GPU state changes from 170k to 4 per frame
+  const p1 = new Path2D(); // dim flash / idle
+  const p2 = new Path2D(); // mid flash
+  const p3 = new Path2D(); // high flash
+  const p4 = new Path2D(); // resolved YO letters
+
+  let c1 = 0;
+  let c2 = 0;
+  let c3 = 0;
+  let c4 = 0;
 
   for (let row = 0; row < rows; row += 1) {
+    const y = row * cellSize + offset;
+    const rowOffset = row * cols;
     for (let col = 0; col < cols; col += 1) {
-      const i = row * cols + col;
+      const i = rowOffset + col;
       let a = 0;
       if (yoMask[i]) a = cellAlpha[i]!;
       else a = Math.max(cellFlash[i]!, pageGridDim);
-      if (a < 0.01) continue;
-      ctx.globalAlpha = a;
-      const x = col * cellSize + (cellSize - dot) * 0.5;
-      const y = row * cellSize + (cellSize - dot) * 0.5;
-      ctx.fillRect(x, y, dot, dot);
+      if (a < 0.05) continue;
+
+      const x = col * cellSize + offset;
+      if (a > 0.85) {
+        p4.rect(x, y, dot, dot);
+        c4 += 1;
+      } else if (a > 0.55) {
+        p3.rect(x, y, dot, dot);
+        c3 += 1;
+      } else if (a > 0.25) {
+        p2.rect(x, y, dot, dot);
+        c2 += 1;
+      } else {
+        p1.rect(x, y, dot, dot);
+        c1 += 1;
+      }
     }
+  }
+
+  ctx.fillStyle = color;
+  if (c1 > 0) {
+    ctx.globalAlpha = 0.18;
+    ctx.fill(p1);
+  }
+  if (c2 > 0) {
+    ctx.globalAlpha = 0.42;
+    ctx.fill(p2);
+  }
+  if (c3 > 0) {
+    ctx.globalAlpha = 0.7;
+    ctx.fill(p3);
+  }
+  if (c4 > 0) {
+    ctx.globalAlpha = 1.0;
+    ctx.fill(p4);
   }
   ctx.globalAlpha = 1;
 }
@@ -237,14 +282,15 @@ export async function initIntroPixelYo(reducedMotion: boolean): Promise<PixelYoA
   const canvas = document.querySelector<HTMLCanvasElement>(".js-intro-pixel-canvas");
   if (!layer || !canvas) return null;
 
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) return null;
 
   let grid: Grid | null = null;
   let scanTween: gsap.core.Tween | null = null;
+  let finishDelayedCall: gsap.core.Tween | null = null;
   let fadeRaf = 0;
   let scanIdx = 0;
-  let scanOrder: number[] = [];
+  let scanOrder: Uint32Array<ArrayBufferLike> = new Uint32Array(0);
 
   const fitCanvas = (): { w: number; h: number } => {
     const { w, h } = viewSize();
@@ -305,7 +351,8 @@ export async function initIntroPixelYo(reducedMotion: boolean): Promise<PixelYoA
     let yoCount = 0;
     for (let i = 0; i < grid.yoMask.length; i += 1) if (grid.yoMask[i]) yoCount += 1;
     const finishYo = (): void => {
-      gsap.delayedCall(site.introYo.holdAfterReveal, emitYoRevealComplete);
+      finishDelayedCall?.kill();
+      finishDelayedCall = gsap.delayedCall(site.introYo.holdAfterReveal, emitYoRevealComplete);
     };
 
     if (yoCount < 8) {
@@ -353,6 +400,9 @@ export async function initIntroPixelYo(reducedMotion: boolean): Promise<PixelYoA
   };
 
   const resetReveal = (): void => {
+    finishDelayedCall?.kill();
+    scanTween?.kill();
+    if (fadeRaf) cancelAnimationFrame(fadeRaf);
     gsap.set(layer, { autoAlpha: 1 });
     void (async () => {
       grid = await buildGrid();

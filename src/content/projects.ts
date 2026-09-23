@@ -1,6 +1,6 @@
 import gallery from "./gallery.json";
 
-export const PROJECT_IMAGE_PLACEHOLDER = "/assets/projects/placeholder.svg";
+export const PROJECT_IMAGE_PLACEHOLDER = "./assets/projects/placeholder.svg";
 
 export type Project = {
   id: string;
@@ -33,14 +33,20 @@ const DEFAULT_RECOGNITION = [
   "FWA of the Day",
 ] as const;
 
-const PROJECTS_DIR = "/assets/projects/";
+const PROJECTS_DIR = "./assets/projects/";
 
 /** Turn a gallery.json `image` value into a URL the site can load. */
 export function resolveProjectImage(image: string): string {
   const trimmed = image.trim();
   if (!trimmed) return PROJECT_IMAGE_PLACEHOLDER;
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/")) {
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     return trimmed;
+  }
+  if (trimmed.startsWith("./")) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("/")) {
+    return `.${trimmed}`;
   }
   return `${PROJECTS_DIR}${trimmed}`;
 }
@@ -53,39 +59,55 @@ function slugFromTitle(title: string): string {
 }
 
 function toProject(entry: GalleryEntry, index: number): Project {
-  const hasRecognition = entry.recognition !== undefined;
+  const title = typeof entry?.title === "string" ? entry.title.trim() : `Project ${index + 1}`;
+  const category = typeof entry?.category === "string" ? entry.category.trim() : "";
+  const description = typeof entry?.description === "string" ? entry.description.trim() : "";
+  const launch = entry?.launch != null ? String(entry.launch).trim() : "";
+  const rawRoles = Array.isArray(entry?.role) ? entry.role : [];
+  const role = rawRoles.map(String).map((r) => r.trim()).filter(Boolean);
+  const rawRec = Array.isArray(entry?.recognition) ? entry.recognition : null;
+  const recognition =
+    rawRec !== null
+      ? rawRec.map(String).map((r) => r.trim()).filter(Boolean)
+      : [...DEFAULT_RECOGNITION];
+
   return {
-    id: entry.id ?? (slugFromTitle(entry.title) || `project-${index + 1}`),
-    title: entry.title.trim(),
-    category: entry.category.trim(),
-    description: entry.description.trim(),
-    launch: entry.launch.trim(),
-    role: entry.role?.length ? entry.role.map((r) => r.trim()).filter(Boolean) : [...DEFAULT_ROLE],
-    recognition: hasRecognition
-      ? entry.recognition!.map((r) => r.trim()).filter(Boolean)
-      : [...DEFAULT_RECOGNITION],
-    image: resolveProjectImage(entry.image),
-    url: entry.url?.trim() || undefined,
+    id:
+      typeof entry?.id === "string" && entry.id.trim()
+        ? entry.id.trim()
+        : slugFromTitle(title) || `project-${index + 1}`,
+    title,
+    category,
+    description,
+    launch,
+    role: role.length ? role : [...DEFAULT_ROLE],
+    recognition,
+    image: resolveProjectImage(typeof entry?.image === "string" ? entry.image : ""),
+    url:
+      typeof entry?.url === "string" && /^https?:\/\//i.test(entry.url.trim())
+        ? entry.url.trim()
+        : undefined,
   };
 }
 
 function validateGallery(entries: GalleryEntry[]): void {
-  if (!import.meta.env.DEV) return;
+  if (!import.meta.env.DEV || !Array.isArray(entries)) return;
 
   entries.forEach((entry, index) => {
-    const label = entry.title || `index ${index}`;
+    const label = entry?.title || `index ${index}`;
     for (const key of ["title", "category", "description", "image", "launch"] as const) {
-      if (!entry[key]?.trim()) {
+      if (!entry?.[key]?.trim()) {
         console.warn(`[gallery.json] "${label}" is missing ${key}.`);
       }
     }
   });
 }
 
-validateGallery(gallery as GalleryEntry[]);
+const rawGallery = Array.isArray(gallery) ? (gallery as GalleryEntry[]) : [];
+validateGallery(rawGallery);
 
 /** Gallery items — edit copy and images in `src/content/gallery.json`. */
-export const projects: Project[] = (gallery as GalleryEntry[]).map(toProject);
+export const projects: Project[] = rawGallery.map(toProject);
 
 /** Warm the browser cache so scroll transitions stay smooth. */
 export function preloadProjectImages(): void {

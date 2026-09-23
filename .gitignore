@@ -5,3 +5,5 @@ analysis/
 *.local
 .DS_Store
 Thumbs.db
+.chrome_tmp/
+server/

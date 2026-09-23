@@ -1,11 +1,12 @@
 .work {
   background: var(--color-work-bg);
   position: relative;
+  z-index: 10;
   min-height: 100vh;
+  box-shadow: 0 -28px 80px rgba(0, 0, 0, 0.2), 0 -8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .work.is-locked {
-  visibility: hidden;
   pointer-events: none;
 }
 
@@ -212,6 +213,7 @@
   font-size: clamp(4rem, 11vw, 7rem);
   background-size: cover;
   background-position: center;
+  background-color: var(--color-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -233,17 +235,6 @@
   font-size: 0.62rem;
   color: var(--color-muted);
   z-index: 12;
-}
-
-.work-counter__reel {
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
-  font-size: 0.62rem;
-  z-index: 12;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  pointer-events: auto;
 }
 
 .work-theme-swatches {
@@ -308,14 +299,6 @@
   .work-counter__current {
     font-size: clamp(2.75rem, 14vw, 4rem);
   }
-
-  .work-counter__reel {
-    right: max(1rem, env(safe-area-inset-right, 0px));
-    bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
-    max-width: 42%;
-    text-align: right;
-    line-height: 1.35;
-  }
 }
 
 @media (min-width: 1024px) and (max-width: 1440px) {
@@ -328,4 +311,49 @@
     left: max(1.25rem, env(safe-area-inset-left, 0px));
     max-width: 140px;
   }
+}
+
+.work.is-reduced-motion .work-pin {
+  height: auto;
+  position: static;
+}
+
+.work.is-reduced-motion .work-stage {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.work.is-reduced-motion .work-canvas {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 4rem 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  pointer-events: auto;
+}
+
+.work.is-reduced-motion .project-card {
+  position: static !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 480px;
+}
+
+.work.is-reduced-motion .project-card__img {
+  aspect-ratio: 440 / 290;
+  display: block;
+}
+
+.work.is-reduced-motion .work-bg-index,
+.work.is-reduced-motion .project-list,
+.work.is-reduced-motion .work-theme-swatches,
+.work.is-reduced-motion .work-counter,
+.work.is-reduced-motion .work-meta {
+  display: none;
 }

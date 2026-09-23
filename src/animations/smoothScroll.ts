@@ -1,34 +1,24 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { site } from "../content/site";
 
 let lenis: Lenis | null = null;
-let introScrollEnd = 0;
 
-export function setIntroScrollEnd(endPx: number): void {
-  introScrollEnd = endPx;
-}
+export function setIntroScrollEnd(_endPx: number): void {}
 
-export function clearIntroScrollEnd(): void {
-  introScrollEnd = 0;
-}
+export function clearIntroScrollEnd(): void {}
 
 export function initSmoothScroll(): Lenis | null {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
 
   lenis = new Lenis({
-    duration: 1.45,
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: "vertical",
+    gestureOrientation: "vertical",
     smoothWheel: true,
-    wheelMultiplier: 0.55,
-    virtualScroll: (data) => {
-      if (introScrollEnd <= 0) return true;
-      const y = lenis?.scroll ?? 0;
-      if (y < introScrollEnd) {
-        data.deltaY *= site.introWheelDampen;
-      }
-      return true;
-    },
+    wheelMultiplier: 1.0,
+    touchMultiplier: 1.5,
   });
 
   lenis.on("scroll", ScrollTrigger.update);
@@ -39,6 +29,21 @@ export function initSmoothScroll(): Lenis | null {
   gsap.ticker.lagSmoothing(0);
 
   return lenis;
+}
+
+export function stopSmoothScroll(): void {
+  lenis?.stop();
+}
+
+export function startSmoothScroll(): void {
+  lenis?.start();
+}
+
+export function destroySmoothScroll(): void {
+  if (lenis) {
+    lenis.destroy();
+    lenis = null;
+  }
 }
 
 export function getLenis(): Lenis | null {

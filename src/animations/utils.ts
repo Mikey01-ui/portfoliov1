@@ -1,5 +1,5 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { escapeAttr, escapeHtml } from "../content/escape";
+import { escapeHtml } from "../content/escape";
 import { projects } from "../content/projects";
 
 function padIndex(n: number): string {
@@ -16,6 +16,12 @@ export function debounceRefresh(ms = 150): () => void {
     clearTimeout(t);
     t = setTimeout(() => refreshScroll(), ms);
   };
+}
+
+export function sanitizeUrl(url?: string): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
 }
 
 export function setActiveProject(index: number): void {
@@ -35,7 +41,7 @@ export function setActiveProject(index: number): void {
   const linkBlock = document.querySelector(".js-meta-link-block");
   const linkEl = document.querySelector<HTMLAnchorElement>(".js-meta-link");
   const indexEl = document.querySelector(".js-section-index");
-  const counterEl = document.querySelector(".js-counter-current");
+  const counterEl = document.querySelector<HTMLElement>(".js-counter-current");
 
   if (roleEl) roleEl.innerHTML = project.role.map((r) => `<li>${escapeHtml(r)}</li>`).join("");
   if (launchEl) launchEl.textContent = project.launch;
@@ -49,17 +55,24 @@ export function setActiveProject(index: number): void {
   }
 
   if (linkBlock && linkEl) {
-    const show = Boolean(project.url);
+    const safeUrl = sanitizeUrl(project.url);
+    const show = Boolean(safeUrl);
     linkBlock.toggleAttribute("hidden", !show);
-    if (show && project.url) {
-      linkEl.href = project.url;
+    if (show && safeUrl) {
+      linkEl.href = safeUrl;
+      linkEl.removeAttribute("tabindex");
+      linkEl.removeAttribute("aria-hidden");
+    } else {
+      linkEl.href = "#";
+      linkEl.setAttribute("tabindex", "-1");
+      linkEl.setAttribute("aria-hidden", "true");
     }
   }
 
   if (indexEl) indexEl.textContent = padIndex(index);
   if (counterEl) {
     counterEl.textContent = padIndex(index);
-    counterEl.setAttribute("style", `background-image:url('${escapeAttr(project.image)}')`);
+    counterEl.style.backgroundImage = `url("${encodeURI(project.image)}")`;
   }
 }
 

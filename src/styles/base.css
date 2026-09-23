@@ -15,6 +15,13 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html {
   scroll-behavior: auto;
 }
@@ -74,10 +81,9 @@ ul {
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: start;
-  justify-items: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   padding: 1.1rem 2rem;
   pointer-events: none;
@@ -89,11 +95,12 @@ ul {
 .site-header.is-visible {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
-.site-header a,
-.site-header button {
+.site-header.is-visible a,
+.site-header.is-visible button,
+.site-header.is-visible .site-header__brand {
   pointer-events: auto;
 }
 

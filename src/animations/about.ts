@@ -15,14 +15,23 @@ export function initAbout(reducedMotion: boolean): void {
   const hireBtn = document.querySelector<HTMLElement>(".js-hire-me");
   const hireText = document.querySelector<HTMLElement>(".js-hire-me-text");
   const hireLine = document.querySelector<HTMLElement>(".js-hire-me-line");
+  const flipBack = document.querySelector<HTMLElement>(".js-about-flip-back");
   const flipClose = document.querySelector<HTMLElement>(".js-flip-close");
-  const contactForm = document.querySelector<HTMLElement>(".js-about-contact-form");
+  const contactForm = document.querySelector<HTMLFormElement>(".js-about-contact-form");
 
   let flipped = false;
 
   const setFlippedState = (open: boolean): void => {
     flipped = open;
     hireBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+    if (flipBack) {
+      if (open) flipBack.removeAttribute("inert");
+      else flipBack.setAttribute("inert", "");
+    }
+    if (flipFront) {
+      if (open) flipFront.setAttribute("inert", "");
+      else flipFront.removeAttribute("inert");
+    }
   };
 
   const setFlippedLayout = (open: boolean): void => {
@@ -32,8 +41,10 @@ export function initAbout(reducedMotion: boolean): void {
   const openFlip = (): void => {
     if (!flipInner || flipped) return;
     setFlippedState(true);
+    setFlippedLayout(true);
     if (reducedMotion) {
-      setFlippedLayout(true);
+      const nameInput = contactForm?.querySelector<HTMLInputElement>(".js-contact-form-name");
+      nameInput?.focus({ preventScroll: true });
       return;
     }
     gsap.to(about, {
@@ -45,22 +56,30 @@ export function initAbout(reducedMotion: boolean): void {
       rotateX: FLIP_DEG,
       duration: 0.95,
       ease: "power3.inOut",
-      onComplete: () => setFlippedLayout(true),
+      onComplete: () => {
+        const nameInput = contactForm?.querySelector<HTMLInputElement>(".js-contact-form-name");
+        nameInput?.focus({ preventScroll: true });
+      },
     });
   };
 
   const closeFlip = (): void => {
     if (!flipInner || !flipped) return;
-    setFlippedLayout(false);
     if (reducedMotion) {
+      setFlippedLayout(false);
       setFlippedState(false);
+      hireBtn?.focus({ preventScroll: true });
       return;
     }
     gsap.to(flipInner, {
       rotateX: 0,
       duration: 0.85,
       ease: "power3.inOut",
-      onComplete: () => setFlippedState(false),
+      onComplete: () => {
+        setFlippedLayout(false);
+        setFlippedState(false);
+        hireBtn?.focus({ preventScroll: true });
+      },
     });
     gsap.to(about, {
       backgroundColor: site.colors.workBg,
@@ -128,7 +147,7 @@ export function initAbout(reducedMotion: boolean): void {
 
     flipClose?.addEventListener("click", closeFlip);
 
-    if (flip && flipInner && flipFront) {
+    if (flip && flipInner && flipFront && window.matchMedia("(hover: hover)").matches) {
       flipFront.addEventListener("mouseenter", () => {
         if (flipped) return;
         gsap.to(flipInner, {
@@ -148,16 +167,94 @@ export function initAbout(reducedMotion: boolean): void {
     }
   }
 
-  contactForm?.addEventListener("submit", (event) => {
+  contactForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const nameInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-name");
     const emailInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-email");
     const messageInput = contactForm.querySelector<HTMLTextAreaElement>(".js-contact-form-message");
     const hearInput = contactForm.querySelector<HTMLInputElement>(".js-contact-form-hear");
+    const submitBtn = contactForm.querySelector<HTMLButtonElement>(".about__hire-submit");
+    const statusEl = contactForm.querySelector<HTMLElement>(".js-contact-form-status");
+
     const name = nameInput?.value.trim() ?? "";
     const from = emailInput?.value.trim() ?? "";
     const message = messageInput?.value.trim() ?? "";
     const hear = hearInput?.value.trim() ?? "";
+
+    const endpoint = (site.contactEndpoint || contactForm.getAttribute("action") || "").trim();
+
+    if (endpoint && !endpoint.startsWith("mailto:")) {
+      try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "SENDING...";
+        }
+        if (statusEl) {
+          statusEl.textContent = "";
+          statusEl.className = "about__hire-status js-contact-form-status";
+        }
+
+        const formData = new FormData(contactForm);
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (res.ok) {
+          contactForm.reset();
+          if (submitBtn) {
+            submitBtn.textContent = "MESSAGE SENT!";
+          }
+          if (statusEl) {
+            statusEl.textContent = "Your message was received. I'll be in touch soon.";
+            statusEl.className = "about__hire-status js-contact-form-status is-success";
+          }
+          setTimeout(() => {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = "LET'S DO THIS";
+            }
+          }, 4000);
+        } else {
+          const errors = (data as { errors?: Array<{ message?: string }> } | null)?.errors;
+          const errorMsg =
+            errors?.map((err) => err.message).filter(Boolean).join(", ") ||
+            "Submission failed. Please check your information.";
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "LET'S DO THIS";
+          }
+          if (statusEl) {
+            statusEl.textContent = errorMsg;
+            statusEl.className = "about__hire-status js-contact-form-status is-error";
+          }
+        }
+      } catch {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "LET'S DO THIS";
+        }
+        if (statusEl) {
+          statusEl.textContent = "Could not send directly. Opening email...";
+          statusEl.classList.add("is-error");
+        }
+        setTimeout(() => {
+          const subject = encodeURIComponent("Project inquiry — Milton portfolio");
+          const body = encodeURIComponent(
+            `Name: ${name}\nEmail: ${from}\nHow they heard about me: ${hear || "—"}\n\n${message}`,
+          );
+          window.location.href = `mailto:${site.contactEmail}?subject=${subject}&body=${body}`;
+        }, 1200);
+      }
+      return;
+    }
+
     const subject = encodeURIComponent("Project inquiry — Milton portfolio");
     const body = encodeURIComponent(
       `Name: ${name}\nEmail: ${from}\nHow they heard about me: ${hear || "—"}\n\n${message}`,

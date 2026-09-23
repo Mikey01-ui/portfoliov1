@@ -11,6 +11,11 @@ import {
 } from "./workLayout";
 
 let workGalleryTrigger: ScrollTrigger | null = null;
+let lastActiveIdx = 0;
+
+export function getCurrentActiveProjectIndex(): number {
+  return lastActiveIdx;
+}
 
 /** Scroll the page so the gallery lands on a given project index. */
 export function scrollToGalleryProject(index: number): void {
@@ -23,21 +28,15 @@ export function scrollToGalleryProject(index: number): void {
 
   const lenis = getLenis();
   if (lenis) {
-    lenis.scrollTo(y, { duration: 1.35, force: true });
+    lenis.scrollTo(y, { duration: 1.2, force: true });
   } else {
     window.scrollTo({ top: y, behavior: "smooth" });
   }
 }
 
-/** Keep gallery pin/timeline idle until intro scroll finishes (avoids one wheel driving both). */
-export function setWorkGalleryActive(active: boolean): void {
-  if (!workGalleryTrigger) return;
-  if (active) {
-    workGalleryTrigger.enable(false, true);
-    ScrollTrigger.refresh();
-  } else {
-    workGalleryTrigger.disable(false, true);
-  }
+/** Keep gallery trigger enabled so its pin spacer stays stable in DOM (prevents layout flash). */
+export function setWorkGalleryActive(_active: boolean): void {
+  // Stable pin spacer maintains document height without layout shifts
 }
 
 /** Gallery scrollytelling. Intro → work handoff is driven in intro.ts. */
@@ -57,11 +56,24 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
     applyCardSlot(card, slotForCard(i, 0), true);
   });
 
+  lastActiveIdx = 0;
   setActiveProject(0);
   gsap.set(list, { y: centerProjectList(0) });
   gsap.set(pin, { y: 0 });
 
   if (reducedMotion) {
+    work.classList.add("is-reduced-motion");
+    cards.forEach((card) => {
+      gsap.set(card, {
+        clearProps: "all",
+        opacity: 1,
+        filter: "none",
+        position: "relative",
+        top: "auto",
+        left: "auto",
+        transform: "none",
+      });
+    });
     setActiveProject(0);
     return null;
   }
@@ -73,24 +85,18 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
       trigger: work,
       start: "top top",
       end: () =>
-        `+=${Math.max(projects.length * window.innerHeight * 0.55, window.innerHeight * 4)}`,
+        `+=${Math.max(projects.length * window.innerHeight * 0.55, window.innerHeight * 3.5)}`,
       pin: true,
-      scrub: 0.55,
+      scrub: true,
       anticipatePin: 1,
       markers: site.DEBUG,
       invalidateOnRefresh: true,
-      snap:
-        projects.length > 1
-          ? {
-              snapTo: 1 / (projects.length - 1),
-              duration: { min: 0.2, max: 0.45 },
-              delay: 0.02,
-              ease: "power2.inOut",
-            }
-          : undefined,
       onUpdate: (self) => {
         const idx = Math.round(self.progress * (projects.length - 1));
-        setActiveProject(idx);
+        if (idx !== lastActiveIdx) {
+          lastActiveIdx = idx;
+          setActiveProject(idx);
+        }
         if (thumb) gsap.set(thumb, { y: self.progress * 140 });
       },
     },
@@ -101,8 +107,6 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
     const pos = (step - 1) * segment;
     tl.addLabel(label, pos);
 
-    const listY = centerProjectList(step);
-
     cards.forEach((card, cardIndex) => {
       const fromSlot = slotForCard(cardIndex, step - 1);
       const toSlot = slotForCard(cardIndex, step);
@@ -110,7 +114,7 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
       tweenCardToSlot(card, toSlot, segment, label, tl);
     });
 
-    tl.to(list, { y: listY, duration: segment, ease: "power3.inOut" }, label);
+    tl.to(list, { y: () => centerProjectList(step), duration: segment, ease: "power3.inOut" }, label);
 
     tl.to(
       ".js-section-index",
@@ -134,7 +138,5 @@ export function initWork(reducedMotion: boolean): ScrollTrigger | null {
   }
 
   workGalleryTrigger = tl.scrollTrigger ?? null;
-  setWorkGalleryActive(false);
-
   return workGalleryTrigger;
 }

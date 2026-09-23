@@ -1,30 +1,28 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { site } from "../content/site";
-import { clearIntroScrollEnd, setIntroScrollEnd } from "./smoothScroll";
+import {
+  clearIntroScrollEnd,
+  setIntroScrollEnd,
+  startSmoothScroll,
+  stopSmoothScroll,
+} from "./smoothScroll";
 import {
   enterIntroHero,
-  getIntroHeroElement,
   initIntroHero,
   resetIntroHero,
 } from "./introHero";
+import { setIntroHeroBgActive } from "./introHeroBg";
 import {
-  getIntroPixelYoLayer,
   initIntroPixelYo,
   isIntroYoRevealComplete,
   onIntroYoRevealComplete,
   resetIntroPixelYo,
 } from "./introPixelYo";
-import { scrollToYImmediate } from "./smoothScroll";
 import { reloadProjectCardImages } from "./projectMedia";
 import { setWorkGalleryActive } from "./work";
 
-function lockWork(work: HTMLElement | null, locked: boolean): void {
-  work?.classList.toggle("is-locked", locked);
-  if (!locked) reloadProjectCardImages();
-}
-
-/** YO (time) → hero on mask (time) → same push curtain reveals SEE WHAT I DO. */
+/** YO (time) → hero on mask (time) → push curtain reveals SEE WHAT I DO → gallery rises from below to the top. */
 export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
   const stage = document.querySelector<HTMLElement>(".js-intro-stage");
   const mask = document.querySelector<HTMLElement>(".js-intro-mask");
@@ -33,40 +31,58 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
   const title = document.querySelector<HTMLElement>(".js-intro-title");
   const header = document.querySelector<HTMLElement>(".js-site-header");
   const work = document.querySelector<HTMLElement>(".js-work");
-  const hero = getIntroHeroElement();
 
   if (!stage || !mask || !intro || !sheet || !title) return null;
 
-  const pixelYo = getIntroPixelYoLayer();
+  const showHeader = (): void => {
+    if (!header) return;
+    header.classList.add("is-visible");
+    header.removeAttribute("aria-hidden");
+  };
 
-  const edge = site.introCurtainStart;
-  const slideDistance = () => window.innerWidth * (1 - edge);
+  const hideHeader = (): void => {
+    if (!header) return;
+    header.classList.remove("is-visible");
+    header.setAttribute("aria-hidden", "true");
+  };
+
+  const slideDistance = () => window.innerWidth + 60;
   const blankHold = site.introHeroScrollHold;
-  const curtainDuration = 8;
-  const holdAfterTitle = 2.5;
-  const fadeDuration = 1.2;
+  const curtainDuration = 4.4;
+  const holdAfterTitle = 8.0;
+  const galleryRiseDuration = 5.0;
 
-  gsap.set(mask, { left: 0, right: 0, x: 0, autoAlpha: 1 });
+  const curtainAt = blankHold;
+  const titleHoldAt = curtainAt + curtainDuration;
+  const galleryRiseAt = titleHoldAt + holdAfterTitle;
+
+  gsap.set(mask, { x: 0, autoAlpha: 1 });
   gsap.set(sheet, { autoAlpha: 0 });
   gsap.set(stage, { autoAlpha: 1 });
-  gsap.set(pixelYo, { autoAlpha: 1 });
-  if (work) gsap.set(work, { autoAlpha: 0 });
+  if (work) {
+    gsap.set(work, { autoAlpha: 1 });
+    work.classList.remove("is-locked");
+  }
 
-  lockWork(work, true);
   initIntroHero(reducedMotion);
+
+  if (!isIntroYoRevealComplete() && !reducedMotion) {
+    stopSmoothScroll();
+  }
 
   void initIntroPixelYo(reducedMotion);
   onIntroYoRevealComplete(() => {
     enterIntroHero(reducedMotion);
+    startSmoothScroll();
+    reloadProjectCardImages();
   });
 
   if (reducedMotion) {
-    gsap.set(mask, { left: `${edge * 100}%`, x: slideDistance() });
+    gsap.set(mask, { x: slideDistance() });
     gsap.set(sheet, { autoAlpha: 1 });
     enterIntroHero(true);
-    lockWork(work, false);
-    gsap.set(work, { autoAlpha: 1 });
-    header?.classList.add("is-visible");
+    if (work) gsap.set(work, { autoAlpha: 1 });
+    showHeader();
     ScrollTrigger.refresh(true);
     return null;
   }
@@ -83,96 +99,85 @@ export function initIntro(reducedMotion: boolean): ScrollTrigger | null {
     scrollTrigger: {
       trigger: intro,
       start: "top top",
-      end: `+=${site.introScrollLength}vh`,
+      end: "bottom top",
       pin: stage,
-      pinSpacing: true,
-      scrub: 1,
+      pinSpacing: false,
+      scrub: true,
       markers: site.DEBUG,
       anticipatePin: 1,
+      invalidateOnRefresh: true,
       onEnter: () => {
         stage.classList.add("is-pinned");
-        setWorkGalleryActive(false);
+        setIntroHeroBgActive(true);
+        setWorkGalleryActive(true);
       },
       onUpdate(self) {
-        if (introHandoffComplete) return;
-        if (!isIntroYoRevealComplete() && self.progress > 0.0005) {
-          self.scroll(self.start);
-          scrollToYImmediate(self.start);
+        if (self.progress < 0.02 && introHandoffComplete) {
+          introHandoffComplete = false;
         }
       },
       onEnterBack(self) {
         stage.classList.add("is-pinned");
-        if (introHandoffComplete) return;
-        if (self.progress > 0.04) return;
-        lockWork(work, true);
-        setWorkGalleryActive(false);
+        setIntroHeroBgActive(true);
+        if (self.progress > 0.05) return;
+        introHandoffComplete = false;
         gsap.set(stage, { autoAlpha: 1 });
-        gsap.set(work, { autoAlpha: 0 });
-        gsap.set(mask, { left: 0, right: 0, x: 0, autoAlpha: 1 });
+        gsap.set(mask, { x: 0, autoAlpha: 1 });
         gsap.set(sheet, { autoAlpha: 0 });
-        header?.classList.remove("is-visible");
+        hideHeader();
         resetIntroHero();
         resetIntroPixelYo();
       },
       onLeave: () => {
         finishIntroHandoff();
+        setIntroHeroBgActive(false);
         stage.classList.remove("is-pinned");
-        gsap.set(stage, { clearProps: "transform,opacity,autoAlpha,backgroundColor" });
-        gsap.set(sheet, { clearProps: "autoAlpha,transform" });
-        gsap.set(mask, { clearProps: "all" });
-        gsap.set(title, { clearProps: "opacity,transform,scale" });
-        gsap.set(hero, { clearProps: "autoAlpha,transform,visibility" });
-        lockWork(work, false);
-        gsap.set(work, { autoAlpha: 1 });
-        header?.classList.add("is-visible");
-        setWorkGalleryActive(true);
-        ScrollTrigger.refresh(true);
+        showHeader();
       },
       onLeaveBack: () => {
         stage.classList.add("is-pinned");
-        lockWork(work, true);
-        setWorkGalleryActive(false);
+        introHandoffComplete = false;
+        setIntroHeroBgActive(true);
       },
     },
   });
 
-  const curtainAt = blankHold;
-  const fadeAt = blankHold + curtainDuration + holdAfterTitle;
-
   tl.fromTo(sheet, { autoAlpha: 0 }, { autoAlpha: 0, duration: blankHold, ease: "none" }, 0)
     .to(sheet, { autoAlpha: 1, duration: 0.001, ease: "none" }, curtainAt)
-    .to(pixelYo, { autoAlpha: 0, duration: 0.001, ease: "none" }, curtainAt)
     .to(
       mask,
       {
-        left: `${edge * 100}%`,
         x: () => slideDistance(),
-        ease: "none",
+        ease: "power1.inOut",
         duration: curtainDuration,
       },
       curtainAt,
     )
-    .to({}, { duration: holdAfterTitle }, curtainAt + curtainDuration)
-    .add(() => {
-      finishIntroHandoff();
-      lockWork(work, false);
-    }, fadeAt)
+    .to({}, { duration: holdAfterTitle }, titleHoldAt)
+    // As the gallery rises from below over the stage, title has subtle upward parallax drift:
     .to(
       title,
-      { scale: 0.92, opacity: 0, y: -48, duration: fadeDuration, ease: "power2.in" },
-      fadeAt,
+      {
+        y: -110,
+        opacity: 0.15,
+        scale: 0.93,
+        duration: galleryRiseDuration,
+        ease: "none",
+      },
+      galleryRiseAt,
     )
-    .to(stage, { autoAlpha: 0, duration: fadeDuration, ease: "power2.inOut" }, fadeAt)
-    .to(work, { autoAlpha: 1, duration: fadeDuration, ease: "power2.inOut" }, fadeAt)
-    .add(() => header?.classList.add("is-visible"), fadeAt + fadeDuration * 0.5);
+    .add(() => {
+      finishIntroHandoff();
+      showHeader();
+    }, galleryRiseAt + galleryRiseDuration * 0.4);
 
   ScrollTrigger.create({
     trigger: work ?? intro,
     start: "top 90%",
-    onEnter: () => header?.classList.add("is-visible"),
+    onEnter: () => showHeader(),
     onLeaveBack: () => {
       if (intro.getBoundingClientRect().bottom > window.innerHeight * 0.1) {
-        header?.classList.remove("is-visible");
+        hideHeader();
       }
     },
   });

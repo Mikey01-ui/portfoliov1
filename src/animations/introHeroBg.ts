@@ -15,18 +15,15 @@ let cellPx = 16;
 let raf = 0;
 let running = false;
 let reduced = false;
-let visible = true;
 let time = 0;
 let lastFrame = 0;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let host: HTMLElement | null = null;
-let heroRoot: HTMLElement | null = null;
 
 const pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, inside: false };
 let resizeObserver: ResizeObserver | null = null;
-let visibilityObserver: IntersectionObserver | null = null;
 
 const CFG = {
   cellSize: 14,
@@ -65,16 +62,19 @@ function buildGrid(w: number, h: number): void {
 
 function fitCanvas(): { w: number; h: number } {
   if (!canvas || !host || !ctx) return { w: 0, h: 0 };
-  const rect = host.getBoundingClientRect();
-  const w = Math.max(1, Math.round(rect.width));
-  const h = Math.max(1, Math.round(rect.height));
+  const w = Math.max(1, window.innerWidth);
+  const h = Math.max(1, window.innerHeight);
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
-  canvas.style.width = `${w}px`;
-  canvas.style.height = `${h}px`;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  buildGrid(w, h);
+  const targetW = Math.round(w * dpr);
+  const targetH = Math.round(h * dpr);
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    canvas.width = targetW;
+    canvas.height = targetH;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildGrid(w, h);
+  }
   return { w, h };
 }
 
@@ -224,10 +224,10 @@ function drawFrame(w: number, h: number, dt: number): void {
 
 function tick(now: number): void {
   raf = 0;
-  if (!running || !visible || reduced) return;
+  if (!running || reduced) return;
 
-  const w = host?.clientWidth ?? 0;
-  const h = host?.clientHeight ?? 0;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   if (w < 1 || h < 1) {
     raf = requestAnimationFrame(tick);
     return;
@@ -247,17 +247,22 @@ function wake(): void {
 
 function paintNow(): void {
   if (!ctx || !host || reduced) return;
-  const w = host.clientWidth;
-  const h = host.clientHeight;
+  const { w, h } = fitCanvas();
   if (w < 1 || h < 1) return;
-  fitCanvas();
   lastFrame = 0;
   drawFrame(w, h, 0);
 }
 
+let cachedHostRect: DOMRect | null = null;
+function updateHostRect(): void {
+  if (host) cachedHostRect = host.getBoundingClientRect();
+}
+
 function onPointerMove(e: PointerEvent): void {
   if (!host || reduced) return;
-  const rect = host.getBoundingClientRect();
+  if (!cachedHostRect) updateHostRect();
+  const rect = cachedHostRect;
+  if (!rect) return;
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   const inside = x >= 0 && y >= 0 && x <= rect.width && y <= rect.height;
@@ -273,6 +278,12 @@ function onPointerMove(e: PointerEvent): void {
   wake();
 }
 
+function onPointerEnd(e: PointerEvent): void {
+  if (e.pointerType === "touch") {
+    pointer.inside = false;
+  }
+}
+
 function onPointerLeave(): void {
   pointer.inside = false;
 }
@@ -280,7 +291,6 @@ function onPointerLeave(): void {
 export function initIntroHeroBg(isReducedMotion: boolean): void {
   reduced = isReducedMotion;
   host = document.querySelector<HTMLElement>(".js-intro-hero-bg");
-  heroRoot = document.querySelector<HTMLElement>(".js-intro-hero");
   canvas = document.querySelector<HTMLCanvasElement>(".js-intro-hero-bg-canvas");
   if (!host || !canvas) return;
 
@@ -288,27 +298,23 @@ export function initIntroHeroBg(isReducedMotion: boolean): void {
   if (!ctx) return;
 
   fitCanvas();
+  updateHostRect();
   paintNow();
 
   if (reduced) return;
 
   resizeObserver = new ResizeObserver(() => {
     fitCanvas();
+    updateHostRect();
     wake();
   });
-  resizeObserver.observe(host);
-
-  visibilityObserver = new IntersectionObserver(
-    (entries) => {
-      visible = entries.some((e) => e.isIntersecting);
-      if (visible && running) wake();
-    },
-    { threshold: 0 },
-  );
-  visibilityObserver.observe(host);
-  if (heroRoot) visibilityObserver.observe(heroRoot);
+  resizeObserver.observe(document.body);
 
   window.addEventListener("pointermove", onPointerMove, { passive: true });
+  window.addEventListener("pointerdown", onPointerMove, { passive: true });
+  window.addEventListener("pointerup", onPointerEnd, { passive: true });
+  window.addEventListener("pointercancel", onPointerEnd, { passive: true });
+  window.addEventListener("scroll", updateHostRect, { passive: true });
   host.addEventListener("pointerleave", onPointerLeave);
 }
 
@@ -328,13 +334,15 @@ export function setIntroHeroBgActive(active: boolean): void {
 export function destroyIntroHeroBg(): void {
   setIntroHeroBgActive(false);
   resizeObserver?.disconnect();
-  visibilityObserver?.disconnect();
   window.removeEventListener("pointermove", onPointerMove);
+  window.removeEventListener("pointerdown", onPointerMove);
+  window.removeEventListener("pointerup", onPointerEnd);
+  window.removeEventListener("pointercancel", onPointerEnd);
+  window.removeEventListener("scroll", updateHostRect);
   host?.removeEventListener("pointerleave", onPointerLeave);
   resizeObserver = null;
-  visibilityObserver = null;
   canvas = null;
   ctx = null;
   host = null;
-  heroRoot = null;
+  cachedHostRect = null;
 }
