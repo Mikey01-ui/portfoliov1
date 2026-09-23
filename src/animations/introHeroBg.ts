@@ -338,13 +338,13 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
     return;
   }
 
-  // Pointer excitation: inject electron energy into phosphor grid
+  // Pointer excitation: sleek, focused electron spark trail (tight radius)
   if (pointer.inside) {
     const pcx = pointer.x / step;
     const pcy = pointer.y / step;
-    const radiusCells = 12;
+    const radiusCells = 4; // Tight, refined 4-cell radius (~48px) instead of giant 300px circle
     const r2 = radiusCells * radiusCells;
-    const impulse = 0.55 + Math.min(1.4, pointer.speed * 0.045);
+    const impulse = 0.45 + Math.min(0.6, pointer.speed * 0.03);
 
     const minCol = Math.max(0, Math.floor(pcx - radiusCells));
     const maxCol = Math.min(cols - 1, Math.ceil(pcx + radiusCells));
@@ -355,22 +355,12 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
       for (let cl = minCol; cl <= maxCol; cl += 1) {
         const d2 = (cl - pcx) * (cl - pcx) + (r - pcy) * (r - pcy);
         if (d2 < r2) {
-          const boost = Math.exp(-d2 / (r2 * 0.38)) * impulse;
+          const boost = Math.exp(-d2 / (r2 * 0.45)) * impulse;
           const idx = r * cols + cl;
-          phosphorGrid[idx] = Math.min(2.0, (phosphorGrid[idx] || 0) + boost);
+          phosphorGrid[idx] = Math.min(1.4, (phosphorGrid[idx] || 0) + boost);
         }
       }
     }
-  }
-
-  // Soft cursor halo glow
-  if (pointer.inside) {
-    const halo = c.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 180);
-    halo.addColorStop(0, "rgba(255, 45, 33, 0.12)");
-    halo.addColorStop(0.5, "rgba(255, 45, 33, 0.03)");
-    halo.addColorStop(1, "rgba(0, 0, 0, 0)");
-    c.fillStyle = halo;
-    c.fillRect(0, 0, w, h);
   }
 
   // Ambient cathode scanline wave traveling down
@@ -389,21 +379,21 @@ function drawPhosphorMode(c: CanvasRenderingContext2D, w: number, h: number): vo
       const idx = r * cols + cl;
       let charge = phosphorGrid[idx] || 0;
 
-      // Exponential half-life decay
-      charge *= 0.938;
+      // Fast, snappy decay (clean trail that doesn't linger into a big blob)
+      charge *= 0.88;
       if (charge < 0.015) charge = 0;
       phosphorGrid[idx] = charge;
 
       const px = cl * step + step * 0.5;
 
       if (charge > 0.05) {
-        // High excitation: Blazing crimson core with white-hot centroid
+        // Refined excitation: Rich signature cadmium red, sleek proportional dot
         const rVal = 255;
-        const gVal = Math.round(45 + Math.min(1, charge - 0.45) * 190);
-        const bVal = Math.round(33 + Math.min(1, charge - 0.45) * 190);
-        const dotSize = Math.min(step * 0.48, 2.2 + charge * 2.8);
+        const gVal = Math.round(45 + Math.min(1, Math.max(0, charge - 0.75)) * 60);
+        const bVal = Math.round(33 + Math.min(1, Math.max(0, charge - 0.75)) * 45);
+        const dotSize = Math.min(step * 0.35, 1.8 + charge * 1.3);
 
-        c.fillStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${Math.min(1, charge * 0.92)})`;
+        c.fillStyle = `rgba(${rVal}, ${gVal}, ${bVal}, ${Math.min(1, 0.4 + charge * 0.6)})`;
         c.beginPath();
         c.arc(px, py, dotSize, 0, Math.PI * 2);
         c.fill();
