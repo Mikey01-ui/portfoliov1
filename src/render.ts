@@ -21,6 +21,13 @@ function renderIntroHeroPanel(): string {
           <canvas class="intro-hero__bg-canvas js-intro-hero-bg-canvas" aria-hidden="true"></canvas>
         </div>
         <div class="intro-hero__inner">
+          <nav class="hero-bg-switcher js-hero-bg-switcher" aria-label="Hero background style">
+            <span class="hero-bg-switcher__label">STYLE:</span>
+            <button type="button" class="hero-bg-switcher__btn js-hero-bg-btn" data-mode="cad">1 · SWISS CAD</button>
+            <button type="button" class="hero-bg-switcher__btn js-hero-bg-btn" data-mode="silk">2 · DARK SILK</button>
+            <button type="button" class="hero-bg-switcher__btn js-hero-bg-btn" data-mode="phosphor">3 · PHOSPHOR</button>
+            <button type="button" class="hero-bg-switcher__btn js-hero-bg-btn" data-mode="shapes">ORIGINAL</button>
+          </nav>
           <div class="intro-hero__main">
             <div class="intro-hero__name-row">
               <span class="intro-hero__im js-intro-hero-im">${escapeHtml(introHero.lineIm)}</span>
