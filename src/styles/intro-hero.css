@@ -210,6 +210,9 @@
 
 .intro-hero__milton {
   color: #ff2d21;
+  transform-origin: 50% 100%;
+  justify-content: center;
+  will-change: transform;
 }
 
 .intro-hero__portrait {

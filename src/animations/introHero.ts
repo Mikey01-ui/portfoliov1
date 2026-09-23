@@ -23,6 +23,15 @@ export function initIntroHero(reducedMotion: boolean): void {
   }
 }
 
+const FONT_CYCLE = [
+  { family: '"Space Mono", monospace', letterSpacing: "0.06em" },
+  { family: '"Cinzel", serif', letterSpacing: "0.02em" },
+  { family: '"Playfair Display", Georgia, serif', letterSpacing: "0.01em" },
+  { family: '"Permanent Marker", cursive', letterSpacing: "0.02em" },
+  { family: '"Syne", sans-serif', letterSpacing: "-0.01em" },
+  { family: 'var(--font-hero-display, "Bebas Neue", sans-serif)', letterSpacing: "0.005em" },
+];
+
 export function enterIntroHero(reducedMotion: boolean): void {
   const root = document.querySelector<HTMLElement>(".js-intro-hero");
   const im = document.querySelector<HTMLElement>(".js-intro-hero-im");
@@ -40,14 +49,28 @@ export function enterIntroHero(reducedMotion: boolean): void {
 
   if (reducedMotion) {
     gsap.set(pixel, { autoAlpha: 0 });
+    milton.style.fontFamily = "";
+    milton.style.letterSpacing = "";
+    milton.style.width = "";
     gsap.set([im, milton, tagline, portrait, cue], { autoAlpha: 1, clearProps: "transform" });
     return;
   }
 
-  gsap.set(im, { autoAlpha: 0, y: 40 });
-  gsap.set(milton, { autoAlpha: 0, y: 48 });
-  gsap.set(tagline, { autoAlpha: 0, y: -16, rotation: -9, transformOrigin: "100% 100%" });
-  gsap.set(portrait, { autoAlpha: 0, y: 32, scale: 0.94, transformOrigin: "50% 100%" });
+  // Measure natural Bebas Neue width so layout remains rock-solid while fonts cycle
+  const naturalWidth = milton.getBoundingClientRect().width;
+  if (naturalWidth > 0) {
+    milton.style.width = `${Math.ceil(naturalWidth)}px`;
+  }
+
+  gsap.set(im, { autoAlpha: 0, y: 36 });
+  gsap.set(milton, {
+    autoAlpha: 0,
+    scaleY: 0.15,
+    y: 0,
+    transformOrigin: "50% 100%",
+  });
+  gsap.set(tagline, { autoAlpha: 0, scale: 0.5, rotation: -16, y: 15, transformOrigin: "100% 100%" });
+  gsap.set(portrait, { autoAlpha: 0, y: 32, scale: 0.92, transformOrigin: "50% 100%" });
   gsap.set(cue, { autoAlpha: 0, y: 16 });
 
   enterTween = gsap.timeline({
@@ -57,12 +80,60 @@ export function enterIntroHero(reducedMotion: boolean): void {
     },
   });
 
-  enterTween
-    .to(im, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.12)
-    .to(milton, { autoAlpha: 1, y: 0, duration: 0.75 }, 0.22)
-    .to(tagline, { autoAlpha: 1, y: 0, rotation: -5, duration: 0.65, transformOrigin: "100% 100%" }, 0.26)
-    .to(portrait, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7 }, 0.3)
-    .to(cue, { autoAlpha: 1, y: 0, duration: 0.55 }, 0.46);
+  // 1. "IM" lands first
+  enterTween.to(im, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+
+  // 2. "MILTON" starts from compressed height at baseline and expands upward
+  enterTween.set(milton, { autoAlpha: 1 }, 0.2);
+
+  // Smoothly stretch height from 0.15 up to 1.05 and snap settle to 1.0
+  enterTween.to(milton, {
+    scaleY: 1.04,
+    duration: 0.68,
+    ease: "power2.out",
+    transformOrigin: "50% 100%",
+  }, 0.2);
+
+  enterTween.to(milton, {
+    scaleY: 1.0,
+    duration: 0.14,
+    ease: "power1.inOut",
+  }, 0.88);
+
+  // Step through contrasting fonts as height rises
+  const stepTime = 0.66 / (FONT_CYCLE.length - 1);
+  FONT_CYCLE.forEach((font, idx) => {
+    const at = 0.2 + idx * stepTime;
+    enterTween?.call(() => {
+      milton.style.fontFamily = font.family;
+      milton.style.letterSpacing = font.letterSpacing;
+    }, [], at);
+  });
+
+  // 3. Once MILTON stops and locks at full height (~0.92s), animate portrait & tagline
+  enterTween.to(portrait, {
+    autoAlpha: 1,
+    y: 0,
+    scale: 1,
+    duration: 0.65,
+    ease: "back.out(1.2)",
+  }, 0.92);
+
+  enterTween.to(tagline, {
+    autoAlpha: 1,
+    scale: 1,
+    rotation: -5,
+    y: 0,
+    duration: 0.6,
+    ease: "back.out(2.2)",
+    onComplete: () => {
+      // Clean up explicit width after intro completes for perfect responsiveness
+      milton.style.width = "";
+    },
+  }, 1.02);
+
+  // 4. Scroll cue fades in
+  enterTween.to(cue, { autoAlpha: 1, y: 0, duration: 0.55 }, 1.25);
 }
 
 export function resetIntroHero(): void {
@@ -72,6 +143,12 @@ export function resetIntroHero(): void {
   enterTween?.kill();
   setIntroHeroBgActive(true);
   root.classList.remove("is-active");
+  const milton = root.querySelector<HTMLElement>(".js-intro-hero-milton");
+  if (milton) {
+    milton.style.fontFamily = "";
+    milton.style.letterSpacing = "";
+    milton.style.width = "";
+  }
   gsap.set(
     root.querySelectorAll(
       ".js-intro-hero-im, .js-intro-hero-milton, .js-intro-hero-tagline, .js-intro-hero-portrait, .js-intro-hero-cue",
