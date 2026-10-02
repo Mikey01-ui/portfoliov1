@@ -1,5 +1,16 @@
 [
   {
+    "id": "3d-camera",
+    "title": "3D & BLENDER CAMERA",
+    "category": "3D & Blender Design",
+    "description": "1930s vintage studio movie camera — 3D modeling, texturing, atmospheric lighting, and optical lens sequence.",
+    "image": "camera-3d.jpg",
+    "launch": "2026",
+    "role": ["Blender", "3D Design", "Lighting & Shading"],
+    "recognition": ["Featured Showcase"],
+    "url": "/camera/"
+  },
+  {
     "id": "rotterdam",
     "title": "VACATION · ROTTERDAM",
     "category": "I love taking pics",
